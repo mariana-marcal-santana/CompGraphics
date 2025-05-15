@@ -12,8 +12,8 @@ function createScene() {
 
   scene = new THREE.Scene();
   const axesOrigin = new THREE.Object3D();
-  axesOrigin.position.set(50, 130, 0); // new referential position
-  axesOrigin.add(new THREE.AxesHelper(50)); // axis size = 10
+  axesOrigin.position.set(0, -105, 0); 
+  axesOrigin.add(new THREE.AxesHelper(300)); 
   scene.add(axesOrigin);
 
   scene.background = new THREE.Color(0xf0f0f0);
@@ -55,9 +55,9 @@ function createMaterials() {
     materials.set("leg", new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: false }));
     materials.set("thigh", new THREE.MeshBasicMaterial({ color: 0xa6a6a6, wireframe: false }));
     materials.set("head", new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: false }));
-    materials.set("antenna", new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: false }));
+    materials.set("antenna", new THREE.MeshBasicMaterial({ color: 0x0ae032, wireframe: false }));
     materials.set("eye", new THREE.MeshBasicMaterial({ color: 0xa6a6a6, wireframe: false }));
-    materials.set("foot", new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: false }));
+    materials.set("foot", new THREE.MeshBasicMaterial({ color: 0x0f40ff, wireframe: false }));
     materials.set("pipe", new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false }));
     materials.set("pipeLower", new THREE.MeshBasicMaterial({ color: 0x504e4e, wireframe: false }));
 }
@@ -75,7 +75,7 @@ function addEye(obj, x, y, z) {
 function addAntenna(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.CylinderGeometry(1, 1, 15, 10); 
+    geometry = new THREE.CylinderGeometry(2, 2, 15, 10); 
     var mesh = new THREE.Mesh(geometry, materials.get("antenna"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -119,7 +119,7 @@ function addLowerExhaustPipe(obj, x, y, z) {
 function addForearm(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(20, 50, 40); 
+    geometry = new THREE.BoxGeometry(20, 50, 20); 
     var mesh = new THREE.Mesh(geometry, materials.get("forearm"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -133,9 +133,9 @@ function addArm(obj, x, y, z) {
     var mesh = new THREE.Mesh(geometry, materials.get("arm"));
     mesh.position.set(x, 0, 0);
 
-    addUpperExhaustPipe(mesh, obj.position.x > 0 ? x - 2.5 : x + 2.5, y + 20, z - 10); 
-    addLowerExhaustPipe(mesh, obj.position.x > 0 ? x - 2.5 : x + 2.5, y , z - 10);
-    addForearm(mesh, 0, y - 45, z + 10);
+    addUpperExhaustPipe(mesh, obj.position.x > 0 ? x - 2.5 : x + 2.5, y + 20, z); 
+    addLowerExhaustPipe(mesh, obj.position.x > 0 ? x - 2.5 : x + 2.5, y , z);
+    addForearm(mesh, 0, y - 45, z);
 
     mesh.add(obj);
     obj.add(mesh);
@@ -147,19 +147,19 @@ function addTorso(obj, x, y, z) {
 
     geometry = new THREE.BoxGeometry(100, 40, 20); // (4, 4, 7)
     var mesh = new THREE.Mesh(geometry, materials.get("torso"));
-    mesh.position.set(x, y, z + 10);
+    mesh.position.set(x, y, z);
     obj.add(mesh);
 
     geometry = new THREE.BoxGeometry(40, 40, 20); // (4, 4, 7)
     var mesh = new THREE.Mesh(geometry, materials.get("torso"));
-    mesh.position.set(x, y, z-10);
+    mesh.position.set(x, y, z);
     obj.add(mesh);
 }
 
 function addAbdomen(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(30, 20, 40); // (4, 2, 2)
+    geometry = new THREE.BoxGeometry(50, 18, 20); // (4, 2, 2)
     var mesh = new THREE.Mesh(geometry, materials.get("abdomen"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -168,7 +168,7 @@ function addAbdomen(obj, x, y, z) {
 function addWheel(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.CylinderGeometry(7.5, 7.5, 10, 15);  // (0.75, 1)
+    geometry = new THREE.CylinderGeometry(10, 10, 10, 15);  // (0.75, 1)
     var mesh = new THREE.Mesh(geometry, materials.get("wheel"));
     mesh.rotation.z = Math.PI / 2;
     mesh.position.set(x, y, z);
@@ -181,7 +181,7 @@ function addWaist(obj, x, y, z) {
     addWheel(obj, x - 40, y, z); // (x, y, z)
     addWheel(obj, x + 40, y, z); // (x, y, z)
 
-    geometry = new THREE.BoxGeometry(70, 20, 40); // (4, 2, 7)
+    geometry = new THREE.BoxGeometry(70, 25, 20); // (4, 2, 7)
     var mesh = new THREE.Mesh(geometry, materials.get("waist"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -190,9 +190,9 @@ function addWaist(obj, x, y, z) {
 function addFoot(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(30, 10, 20); // (2, 1, 3)
+    geometry = new THREE.BoxGeometry(35, 20, 30); // (2, 1, 3)
     var mesh = new THREE.Mesh(geometry, materials.get("foot"));
-    mesh.position.set(x < 0 ? x-5 : x+5, -5, 0);
+    mesh.position.set(x < 0 ? x-5 : x+5, y, z);
     mesh.add(feet);
     feet.add(mesh);
     leg.add(feet);
@@ -201,7 +201,7 @@ function addFoot(obj, x, y, z) {
 function addLeg(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(30, 70, 10); // (1, 7, 3)
+    geometry = new THREE.BoxGeometry(30, 70, 20); // (1, 7, 3)
     var mesh = new THREE.Mesh(geometry, materials.get("leg"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -210,13 +210,13 @@ function addLeg(obj, x, y, z) {
 function addThigh(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(20, 30, 10); // (1, 3, 2)
+    geometry = new THREE.BoxGeometry(20, 30, 20); // (1, 3, 2)
     var mesh = new THREE.Mesh(geometry, materials.get("thigh"));
-    mesh.position.set(x, -10, 0);
+    mesh.position.set(x, y, z);
 
     addLeg(mesh, x < 0 ? -5 : 5, -50, 0); // (x, y, z)
-    addWheel(mesh, x < 0 ? -25 : 25, -55, 2.5); // (x, y, z)
-    addWheel(mesh, x < 0 ? -25 : 25, -75, 2.5); // (x, y, z)
+    addWheel(mesh, x < 0 ? -25 : 25, -45, 0); // (x, y, z)
+    addWheel(mesh, x < 0 ? -25 : 25, -70, 0); // (x, y, z)
     addFoot(mesh, x, -90, 5); // (x, y, z)
 
     mesh.add(leg);
@@ -230,9 +230,9 @@ function createRobot(x, y, z) {
     robot = new THREE.Object3D();
     robot.userData = {truck: false};
 
-    addWaist(robot, 0, 0, 0); 
-    addAbdomen(robot, 0, 20, 0); 
-    addTorso(robot, 0, 50, 0); 
+    addWaist(robot, 0, 0, 10); 
+    addAbdomen(robot, 0, 21, 10); 
+    addTorso(robot, 0, 50, 10); 
 
     // head
     head = new THREE.Object3D();
@@ -242,24 +242,24 @@ function createRobot(x, y, z) {
 
     // arms
     lArm = new THREE.Object3D();
-    lArm.position.set(45, 50, -10);
+    lArm.position.set(45, 50, 10);
 
     rArm = new THREE.Object3D();
-    rArm.position.set(-45, 50, -10);
+    rArm.position.set(-45, 50, 10);
 
     addArm(lArm, 15, 0, 0); 
     addArm(rArm, -15, 0, 0); 
 
-    // legs
+    // legs2
     leg = new THREE.Object3D();
-    leg.position.set(0, -5, 5);
+    leg.position.set(0, -5, 0);
 
     // feet
     feet = new THREE.Object3D();
-    feet.position.set(0, -95, 5);
+    feet.position.set(0, -15, 10);
 
-    addThigh(robot, 15, 0, 0); // (x, y, z)
-    addThigh(robot, -15, 0, 0); // (x, y, z)
+    addThigh(robot, 15, -10, 10); // (x, y, z)
+    addThigh(robot, -15, -10, 10); // (x, y, z)
 
     scene.add(robot);
 
@@ -317,17 +317,15 @@ function init() {
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("resize", onResize);
 
-  render();
+  animate(); 
 }
 
 init();
 
-// function animate() {
-//     'use strict';
+function animate() {
+  'use strict';
 
-//     update();
-
-//     render();
-//     requestAnimationFrame(animate);
-// }
+  render();
+  requestAnimationFrame(animate);
+}
 
