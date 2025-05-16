@@ -4,8 +4,24 @@ var cameras = [], camera, scene, renderer;
 
 var geometry;
 
-var trailer, robot, head, feet, leg, lArm, rArm;
-const materials = new Map()
+var trailer, trailerBody, robot, head, feet, leg, lArm, rArm;
+
+let rotateHeadIn = false, rotateHeadOut = false, rotateLegIn = false, rotateLegOut = false,
+    rotateFeetIn = false, rotateFeetOut = false, displaceArmsIn = false, displaceArmsOut = false;
+
+var minTruckAABB = new THREE.Vector3(-120 / 2 - 40, 0, -70 / 2), maxTruckAABB = new THREE.Vector3(120 / 2 - 40, 80, 70 / 2), minTrailerAABB, maxTrailerAABB;
+
+const materials = new Map(), clock = new THREE.Clock();
+var delta;
+
+const keys = {}, movementVector = new THREE.Vector2(0, 0);
+
+const duration = 5; // duration (in seconds)
+const animationSpeed = 2;
+var elapsed = 0;
+const targetPos = new THREE.Vector3(-95, 30, 0); // final position of the trailer
+let displacement;
+
 
 function createScene() {
   'use strict';
@@ -19,12 +35,13 @@ function createScene() {
   scene.background = new THREE.Color(0xf0f0f0);
 
   createRobot(0, 15, 0);
+  createTrailer(0, -105, -150);
 }
 
 function createCameras() {
   'use strict';
 
-  const positions = [[0, 0, 100], [100, 0, 0], [0, 150, 0], [500, 500, 500]]
+  const positions = [[0, 0, 100], [100, 0, 0], [0, 150, 0], [300, 300, 300]]
 
   for (let i = 0; i < 4; i++) {
     if (i == 3) {
@@ -45,6 +62,7 @@ function createCameras() {
 function createMaterials() {
     'use strict';
     
+    materials.set("trailerPiece", new THREE.MeshBasicMaterial({ color: 0x5a6a6a, wireframe: false }));
     materials.set("trailer", new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false }));
     materials.set("wheel", new THREE.MeshBasicMaterial({ color: 0x00000, wireframe: false }));
     materials.set("torso", new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false }));
@@ -192,7 +210,7 @@ function addFoot(obj, x, y, z) {
 
     geometry = new THREE.BoxGeometry(35, 20, 30); // (2, 1, 3)
     var mesh = new THREE.Mesh(geometry, materials.get("foot"));
-    mesh.position.set(x < 0 ? x-5 : x+5, y, z);
+    mesh.position.set(x < 0 ? x : x, y, z);
     mesh.add(feet);
     feet.add(mesh);
     leg.add(feet);
@@ -214,9 +232,9 @@ function addThigh(obj, x, y, z) {
     var mesh = new THREE.Mesh(geometry, materials.get("thigh"));
     mesh.position.set(x, y, z);
 
-    addLeg(mesh, x < 0 ? -5 : 5, -50, 0); // (x, y, z)
-    addWheel(mesh, x < 0 ? -25 : 25, -45, 0); // (x, y, z)
-    addWheel(mesh, x < 0 ? -25 : 25, -70, 0); // (x, y, z)
+    addLeg(mesh, 0, -50, 0); // (x, y, z)
+    addWheel(mesh, x < 0 ? -20 : 20, -45, 0); // (x, y, z)
+    addWheel(mesh, x < 0 ? -20 : 20, -70, 0); // (x, y, z)
     addFoot(mesh, x, -90, 5); // (x, y, z)
 
     mesh.add(leg);
@@ -258,12 +276,50 @@ function createRobot(x, y, z) {
     feet = new THREE.Object3D();
     feet.position.set(0, -15, 10);
 
-    addThigh(robot, 15, -10, 10); // (x, y, z)
-    addThigh(robot, -15, -10, 10); // (x, y, z)
+    addThigh(robot, 20, -10, 10); // (x, y, z)
+    addThigh(robot, -20, -10, 10); // (x, y, z)
 
     scene.add(robot);
 
     robot.position.set(x, y, z);
+}
+
+function addTrailerBody(obj, x, y, z) {
+    'use strict';
+    geometry = new THREE.BoxGeometry(50, 20, 50);
+    var mesh = new THREE.Mesh(geometry, materials.get("trailer"));
+    mesh.position.set(x, y, z);
+    obj.add(mesh);
+
+    geometry = new THREE.BoxGeometry(50, 20, 150);
+    var mesh = new THREE.Mesh(geometry, materials.get("trailer"));
+    mesh.position.set(x, y + 15, z + 50);
+    obj.add(mesh);
+
+    geometry = new THREE.BoxGeometry(25, 10, 10);
+    var mesh = new THREE.Mesh(geometry, materials.get("trailerPiece"));
+    mesh.position.set(x, y , z + 120);
+    obj.add(mesh);
+}
+
+function createTrailer(x, y, z) {
+    'use strict';
+
+    trailer = new THREE.Object3D();
+
+    // trailer body
+    trailerBody = new THREE.Object3D();
+    trailerBody.position.set(0, 0, 0);
+    addTrailerBody(trailer, 0, 10, 15);
+
+    addWheel(trailer, -30, 0, 0);
+    addWheel(trailer, -30, 0, 30);
+    addWheel(trailer, 30, 0, 0);
+    addWheel(trailer, 30, 0, 30);
+
+    scene.add(trailer);
+
+    trailer.position.set(x, y+10, z);
 }
 
 function onResize() {
@@ -293,7 +349,49 @@ function onKeyDown(e) {
     case 52: //4
       camera = cameras[3];
       break;
+    case 81: // q
+      rotateFeetIn = true;
+      break;
+    case 65: // a
+      rotateFeetOut = true;
+      break;
+    case 87: // w
+      rotateLegIn = true;
+      break;
+    case 83: // s
+      rotateLegOut = true;
+      break;
+    case 69: //e
+      displaceArmsIn = true;
+      break;
+    case 68: // d
+      displaceArmsOut = true;
+      break;
+    case 82: // r
+      rotateHeadIn = true;
+      break;
+    case 70: // f
+      rotateHeadOut = true;
+      break;
   }
+}
+
+function computeDisplacement(delta) {
+    const currentPos = trailer.position.clone();
+    const distance = targetPos.clone().sub(currentPos);
+    const velocity = distance.clone().divideScalar(duration).multiplyScalar(animationSpeed);
+    displacement = velocity.clone().multiplyScalar(delta);
+}
+
+function checkTruckMode() {
+    'use strict';
+
+    robot.userData.truck = head.rotation.z == Math.PI / 2 &&
+                            leg.rotation.z ==  - Math.PI / 2 &&
+                            feet.rotation.z == - Math.PI / 2 &&
+                            lArm.position.z == 25 && rArm.position.z == -25;
+
+    if (!robot.userData.truck) trailer.userData.engaged = false; 
 }
 
 function render() {
@@ -310,6 +408,8 @@ function init() {
   renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(renderer.domElement);
 
+  clock.start();
+
   createMaterials();
   createScene();
   createCameras();
@@ -324,6 +424,7 @@ init();
 
 function animate() {
   'use strict';
+  update();
 
   render();
   requestAnimationFrame(animate);
