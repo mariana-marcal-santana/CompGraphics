@@ -9,16 +9,13 @@ var trailer, trailerBody, robot, head, feet, leg, lArm, rArm;
 let rotateHeadIn = false, rotateHeadOut = false, rotateLegIn = false, rotateLegOut = false,
     rotateFeetIn = false, rotateFeetOut = false, displaceArmsIn = false, displaceArmsOut = false;
 
-var minTruckAABB = new THREE.Vector3(-120 / 2 - 40, 0, -70 / 2), maxTruckAABB = new THREE.Vector3(120 / 2 - 40, 80, 70 / 2), minTrailerAABB, maxTrailerAABB;
 
 const materials = new Map(), clock = new THREE.Clock();
 var delta;
 
-const keys = {}, movementVector = new THREE.Vector2(0, 0);
-
 const duration = 5; // duration (in seconds)
 const animationSpeed = 2;
-var elapsed = 0;
+
 const targetPos = new THREE.Vector3(-95, 30, 0); // final position of the trailer
 let displacement;
 
@@ -268,7 +265,7 @@ function createRobot(x, y, z) {
     addArm(lArm, 15, 0, 0); 
     addArm(rArm, -15, 0, 0); 
 
-    // legs2
+    // legs
     leg = new THREE.Object3D();
     leg.position.set(0, -5, 0);
 
@@ -376,22 +373,64 @@ function onKeyDown(e) {
   }
 }
 
-function computeDisplacement(delta) {
-    const currentPos = trailer.position.clone();
-    const distance = targetPos.clone().sub(currentPos);
-    const velocity = distance.clone().divideScalar(duration).multiplyScalar(animationSpeed);
-    displacement = velocity.clone().multiplyScalar(delta);
+
+
+function update(){
+  'use strict';
+
+  delta = clock.getDelta();
+
+  handleRotations(delta);
+}
+
+function handleRotations(delta) {
+    'use strict';
+    if (rotateFeetIn) {
+        feet.rotation.x = THREE.MathUtils.clamp(feet.rotation.x + delta * 5, - Math.PI / 2, 0);
+        rotateFeetIn = false;
+    }
+    if (rotateFeetOut) {
+        feet.rotation.x = THREE.MathUtils.clamp(feet.rotation.x - delta * 5, - Math.PI / 2, 0);
+        rotateFeetOut = false;
+    }
+    if (rotateLegIn) {
+        leg.rotation.x = THREE.MathUtils.clamp(leg.rotation.x + delta * 5, 0, Math.PI / 2);
+        rotateLegIn = false;
+    }
+    if (rotateLegOut) {
+        leg.rotation.x = THREE.MathUtils.clamp(leg.rotation.x - delta * 5, 0, Math.PI / 2);
+        rotateLegOut = false;
+    }
+    if (rotateHeadIn) {
+        head.rotation.x = THREE.MathUtils.clamp(head.rotation.x - delta * 5, -Math.PI / 2, 0);
+        rotateHeadIn = false;
+    }
+    if (rotateHeadOut) {
+        head.rotation.x = THREE.MathUtils.clamp(head.rotation.x + delta * 5, -Math.PI / 2, 0);
+        rotateHeadOut = false;
+    }
+    if (displaceArmsIn) {
+        lArm.position.x = THREE.MathUtils.clamp(lArm.position.x + delta * 50, 25, 45);
+        rArm.position.x = THREE.MathUtils.clamp(rArm.position.x - delta * 50, -45, -25);
+        displaceArmsIn = false;
+    }
+    if (displaceArmsOut) {
+        lArm.position.x = THREE.MathUtils.clamp(lArm.position.x - delta * 50, 25, 45);
+        rArm.position.x = THREE.MathUtils.clamp(rArm.position.x + delta * 50, -45, -25);
+        displaceArmsOut = false;
+    }
+    checkTruckMode();
 }
 
 function checkTruckMode() {
     'use strict';
 
-    robot.userData.truck = head.rotation.z == Math.PI / 2 &&
-                            leg.rotation.z ==  - Math.PI / 2 &&
-                            feet.rotation.z == - Math.PI / 2 &&
-                            lArm.position.z == 25 && rArm.position.z == -25;
+    robot.userData.truck = head.rotation.x == Math.PI / 2 &&
+                            leg.rotation.x ==  - Math.PI / 2 &&
+                            feet.rotation.x == - Math.PI / 2 &&
+                            lArm.position.x == 25 && rArm.position.x == -25;
 
-    if (!robot.userData.truck) trailer.userData.engaged = false; 
+    // if (!robot.userData.truck) trailer.userData.engaged = false; 
 }
 
 function render() {
