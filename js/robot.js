@@ -7,7 +7,8 @@ var geometry;
 var trailer, trailerBody, robot, head, feet, leg, lArm, rArm;
 
 let rotateHeadIn = false, rotateHeadOut = false, rotateLegIn = false, rotateLegOut = false,
-    rotateFeetIn = false, rotateFeetOut = false, displaceArmsIn = false, displaceArmsOut = false;
+    rotateFeetIn = false, rotateFeetOut = false, displaceArmsIn = false, displaceArmsOut = false,
+    trailerMoveLeft = false, trailerMoveRight = false, trailerMoveUp = false, trailerMoveDown = false;
 
 const materials = new Map(), clock = new THREE.Clock();
 var delta;
@@ -74,7 +75,7 @@ function addEye(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(1.5, 1.5, 2, 32); 
-    var mesh = new THREE.Mesh(geometry, materials.get("eye"));
+    var mesh = new THREE.Mesh(geometry, materials.get("eye").clone());
     mesh.rotation.x = Math.PI/2 ;
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -84,7 +85,7 @@ function addAntenna(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(2, 2, 15, 10); 
-    var mesh = new THREE.Mesh(geometry, materials.get("antenna"));
+    var mesh = new THREE.Mesh(geometry, materials.get("antenna").clone());
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -110,7 +111,7 @@ function addUpperExhaustPipe(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(2, 2, 20, 15);  
-    var mesh = new THREE.Mesh(geometry, materials.get("pipe"));
+    var mesh = new THREE.Mesh(geometry, materials.get("pipe").clone());
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -119,7 +120,7 @@ function addLowerExhaustPipe(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(2.5, 2.5, 30, 15);  
-    var mesh = new THREE.Mesh(geometry, materials.get("pipeLower"));
+    var mesh = new THREE.Mesh(geometry, materials.get("pipeLower").clone());
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -128,7 +129,7 @@ function addForearm(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.BoxGeometry(20, 50, 20); 
-    var mesh = new THREE.Mesh(geometry, materials.get("forearm"));
+    var mesh = new THREE.Mesh(geometry, materials.get("forearm").clone());
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -138,7 +139,7 @@ function addArm(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.BoxGeometry(20, 40, 20); 
-    var mesh = new THREE.Mesh(geometry, materials.get("arm"));
+    var mesh = new THREE.Mesh(geometry, materials.get("arm").clone());
     mesh.position.set(x, 0, 0);
 
     addUpperExhaustPipe(mesh, obj.position.x > 0 ? x - 2.5 : x + 2.5, y + 20, z); 
@@ -170,8 +171,8 @@ function addAbdomen(obj, x, y, z) {
 function addWheel(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.CylinderGeometry(10, 10, 10, 15);  // (0.75, 1)
-    var mesh = new THREE.Mesh(geometry, materials.get("wheel"));
+    geometry = new THREE.CylinderGeometry(10, 10, 10, 15);  
+    var mesh = new THREE.Mesh(geometry, materials.get("wheel").clone());
     mesh.rotation.z = Math.PI / 2;
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -193,7 +194,7 @@ function addFoot(obj, x, y, z) {
     'use strict';
     
     geometry = new THREE.BoxGeometry(35, 20, 30); 
-    var mesh = new THREE.Mesh(geometry, materials.get("foot"));
+    var mesh = new THREE.Mesh(geometry, materials.get("foot").clone());
     mesh.position.set(x, y, z);
     feet.add(mesh);
     leg.add(feet); 
@@ -203,22 +204,22 @@ function addLeg(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.BoxGeometry(30, 70, 20); 
-    var mesh = new THREE.Mesh(geometry, materials.get("leg"));
+    var mesh = new THREE.Mesh(geometry, materials.get("leg").clone());
     mesh.position.set(x, y, z);
     obj.add(mesh);
-}
+}77
 
 function addThigh(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.BoxGeometry(20, 30, 20);
-    var mesh = new THREE.Mesh(geometry, materials.get("thigh"));
+    var mesh = new THREE.Mesh(geometry, materials.get("thigh").clone());
     mesh.position.set(x, y, z);
 
     addLeg(mesh, 0, -50, 0); 
     addWheel(mesh, x < 0 ? -20 : 20, -45, 0); 
     addWheel(mesh, x < 0 ? -20 : 20, -70, 0); 
-    addFoot(mesh, x, -5, 0); 
+    addFoot(mesh, x, -25, 0); 
 
     leg.add(mesh);
     obj.add(leg);
@@ -256,7 +257,7 @@ function createRobot(x, y, z) {
 
     // feet
     feet = new THREE.Object3D();
-    feet.position.set(0, -100, 15);
+    feet.position.set(0, -80, 15);
 
     addThigh(robot, 20, -10, 10); 
     addThigh(robot, -20, -10, 10); 
@@ -269,17 +270,17 @@ function createRobot(x, y, z) {
 function addTrailerBody(obj, x, y, z) {
     'use strict';
     geometry = new THREE.BoxGeometry(50, 20, 50);
-    var mesh = new THREE.Mesh(geometry, materials.get("trailer"));
+    var mesh = new THREE.Mesh(geometry, materials.get("trailer").clone());
     mesh.position.set(x, y, z);
     obj.add(mesh);
 
-    geometry = new THREE.BoxGeometry(50, 20, 150);
-    var mesh = new THREE.Mesh(geometry, materials.get("trailer"));
-    mesh.position.set(x, y + 15, z + 50);
+    geometry = new THREE.BoxGeometry(50, 50, 150);
+    var mesh = new THREE.Mesh(geometry, materials.get("trailer").clone());
+    mesh.position.set(x, y + 30, z + 50);
     obj.add(mesh);
 
     geometry = new THREE.BoxGeometry(25, 10, 10);
-    var mesh = new THREE.Mesh(geometry, materials.get("trailerPiece"));
+    var mesh = new THREE.Mesh(geometry, materials.get("trailerPiece").clone());
     mesh.position.set(x, y , z + 120);
     obj.add(mesh);
 }
@@ -355,6 +356,64 @@ function onKeyDown(e) {
     case 70: // f
       rotateHeadOut = true;
       break;
+    case 37: // left
+      trailerMoveLeft = true;
+      break;
+    case 39: // right
+      trailerMoveRight = true;
+      break;
+    case 38: // up  
+      trailerMoveUp = true;
+      break;
+    case 40: // down
+      trailerMoveDown = true;
+      break;
+    case 55: // 7
+      toggleWireframe();
+      break;
+  }
+}
+
+function onKeyUp(e) {
+  'use strict';
+
+  switch (e.keyCode) {
+    case 37: // left
+      trailerMoveLeft = false;
+      break;
+    case 39: // right
+      trailerMoveRight = false;
+      break;
+    case 38: // up
+      trailerMoveUp = false;
+      break;
+    case 40: // down
+      trailerMoveDown = false;
+      break;
+      case 81: // q
+      rotateFeetIn = false;
+      break;
+    case 65: // a
+      rotateFeetOut = false;
+      break;
+    case 87: // w
+      rotateLegIn = false;
+      break;
+    case 83: // s
+      rotateLegOut = false;
+      break;
+    case 69: //e
+      displaceArmsIn = false;
+      break;
+    case 68: // d
+      displaceArmsOut = false;
+      break;
+    case 82: // r
+      rotateHeadIn = false;
+      break;
+    case 70: // f
+      rotateHeadOut = false;
+      break;
   }
 }
 
@@ -363,45 +422,71 @@ function update(){
   
   delta = clock.getDelta();
   handleRotations(delta);
+  handleTrailerMovement(delta);
+}
+
+function handleTrailerMovement(delta) {
+  'use strict';
+  if (trailerMoveLeft) {
+    trailer.position.x = THREE.MathUtils.clamp(trailer.position.x - delta * 50, -200, 200);
+  }
+  if (trailerMoveRight) {
+    trailer.position.x = THREE.MathUtils.clamp(trailer.position.x + delta * 50, -200, 200); 
+  }
+  if (trailerMoveUp) {
+    trailer.position.y = THREE.MathUtils.clamp(trailer.position.y + delta * 50, -200, 200);
+  }
+  if (trailerMoveDown) {
+    trailer.position.y = THREE.MathUtils.clamp(trailer.position.y - delta * 50, -200, 200);
+  }
 }
 
 function handleRotations(delta) {
   'use strict';
   if (rotateFeetIn) {
-    feet.rotation.x = THREE.MathUtils.clamp(feet.rotation.x + delta * 5, 0, Math.PI / 2);
-    rotateFeetIn = false;
+    feet.rotation.x = THREE.MathUtils.clamp(feet.rotation.x + delta , 0, Math.PI / 2);
   }
   if (rotateFeetOut) {
-    feet.rotation.x = THREE.MathUtils.clamp(feet.rotation.x - delta * 5, 0, Math.PI / 2);
-    rotateFeetOut = false;
+    feet.rotation.x = THREE.MathUtils.clamp(feet.rotation.x - delta, 0, Math.PI / 2);
   }
   if (rotateLegIn) {
-    leg.rotation.x = THREE.MathUtils.clamp(leg.rotation.x + delta * 5, 0, Math.PI / 2);
-    rotateLegIn = false;
+    leg.rotation.x = THREE.MathUtils.clamp(leg.rotation.x + delta, 0, Math.PI / 2);
   }
   if (rotateLegOut) {
-    leg.rotation.x = THREE.MathUtils.clamp(leg.rotation.x - delta * 5, 0, Math.PI / 2);
-    rotateLegOut = false;
+    leg.rotation.x = THREE.MathUtils.clamp(leg.rotation.x - delta, 0, Math.PI / 2);
   }
   if (rotateHeadIn) {
-    head.rotation.x = THREE.MathUtils.clamp(head.rotation.x - delta * 5, -Math.PI / 2, 0);
-    rotateHeadIn = false;
+    head.rotation.x = THREE.MathUtils.clamp(head.rotation.x - delta, -Math.PI / 2, 0);
   }
   if (rotateHeadOut) {
-    head.rotation.x = THREE.MathUtils.clamp(head.rotation.x + delta * 5, -Math.PI / 2, 0);
-    rotateHeadOut = false;
+    head.rotation.x = THREE.MathUtils.clamp(head.rotation.x + delta, -Math.PI / 2, 0);
   }
   if (displaceArmsIn) {
-    lArm.position.x = THREE.MathUtils.clamp(lArm.position.x + delta * 50, 25, 45);
-    rArm.position.x = THREE.MathUtils.clamp(rArm.position.x - delta * 50, -45, -25);
-    displaceArmsIn = false;
+    lArm.position.x = THREE.MathUtils.clamp(lArm.position.x + delta * 25, 25, 45);
+    rArm.position.x = THREE.MathUtils.clamp(rArm.position.x - delta * 25, -45, -25);
   }
   if (displaceArmsOut) {
-    lArm.position.x = THREE.MathUtils.clamp(lArm.position.x - delta * 50, 25, 45);
-    rArm.position.x = THREE.MathUtils.clamp(rArm.position.x + delta * 50, -45, -25);
-    displaceArmsOut = false;
+    lArm.position.x = THREE.MathUtils.clamp(lArm.position.x - delta * 25, 25, 45);
+    rArm.position.x = THREE.MathUtils.clamp(rArm.position.x + delta * 25, -45, -25);
   }
   checkTruckMode();
+}
+
+function toggleWireframe() {
+  'use strict';
+  scene.traverse((object) => {
+    if (object.isMesh) {
+      const material = object.material;
+          
+      if (Array.isArray(material)) {
+        material.forEach(mat => {
+            mat.wireframe = !mat.wireframe;
+        });
+      } else {
+        material.wireframe = !material.wireframe;
+      }
+    }
+  });
 }
 
 function checkTruckMode() {
@@ -436,6 +521,7 @@ function init() {
   createCameras();
 
   window.addEventListener("keydown", onKeyDown);
+  window.addEventListener("keyup", onKeyUp);
   window.addEventListener("resize", onResize);
 
   animate(); 
