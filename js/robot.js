@@ -9,15 +9,8 @@ var trailer, trailerBody, robot, head, feet, leg, lArm, rArm;
 let rotateHeadIn = false, rotateHeadOut = false, rotateLegIn = false, rotateLegOut = false,
     rotateFeetIn = false, rotateFeetOut = false, displaceArmsIn = false, displaceArmsOut = false;
 
-
 const materials = new Map(), clock = new THREE.Clock();
 var delta;
-
-const duration = 5; // duration (in seconds)
-const animationSpeed = 2;
-
-const targetPos = new THREE.Vector3(-95, 30, 0); // final position of the trailer
-let displacement;
 
 
 function createScene() {
@@ -152,7 +145,6 @@ function addArm(obj, x, y, z) {
     addLowerExhaustPipe(mesh, obj.position.x > 0 ? x - 2.5 : x + 2.5, y , z);
     addForearm(mesh, 0, y - 45, z);
 
-    mesh.add(obj);
     obj.add(mesh);
     robot.add(obj);
 }
@@ -160,12 +152,7 @@ function addArm(obj, x, y, z) {
 function addTorso(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(100, 40, 20); // (4, 4, 7)
-    var mesh = new THREE.Mesh(geometry, materials.get("torso"));
-    mesh.position.set(x, y, z);
-    obj.add(mesh);
-
-    geometry = new THREE.BoxGeometry(40, 40, 20); // (4, 4, 7)
+    geometry = new THREE.BoxGeometry(100, 40, 20); 
     var mesh = new THREE.Mesh(geometry, materials.get("torso"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -174,7 +161,7 @@ function addTorso(obj, x, y, z) {
 function addAbdomen(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(50, 18, 20); // (4, 2, 2)
+    geometry = new THREE.BoxGeometry(50, 18, 20); 
     var mesh = new THREE.Mesh(geometry, materials.get("abdomen"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -193,10 +180,10 @@ function addWheel(obj, x, y, z) {
 function addWaist(obj, x, y, z) {
     'use strict';
 
-    addWheel(obj, x - 40, y, z); // (x, y, z)
-    addWheel(obj, x + 40, y, z); // (x, y, z)
+    addWheel(obj, x - 40, y, z); 
+    addWheel(obj, x + 40, y, z); 
 
-    geometry = new THREE.BoxGeometry(70, 25, 20); // (4, 2, 7)
+    geometry = new THREE.BoxGeometry(70, 25, 20); 
     var mesh = new THREE.Mesh(geometry, materials.get("waist"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -204,19 +191,18 @@ function addWaist(obj, x, y, z) {
 
 function addFoot(obj, x, y, z) {
     'use strict';
-
-    geometry = new THREE.BoxGeometry(35, 20, 30); // (2, 1, 3)
+    
+    geometry = new THREE.BoxGeometry(35, 20, 30); 
     var mesh = new THREE.Mesh(geometry, materials.get("foot"));
-    mesh.position.set(x < 0 ? x : x, y, z);
-    mesh.add(feet);
+    mesh.position.set(x, y, z);
     feet.add(mesh);
-    leg.add(feet);
+    leg.add(feet); 
 }
 
 function addLeg(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(30, 70, 20); // (1, 7, 3)
+    geometry = new THREE.BoxGeometry(30, 70, 20); 
     var mesh = new THREE.Mesh(geometry, materials.get("leg"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -225,16 +211,15 @@ function addLeg(obj, x, y, z) {
 function addThigh(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(20, 30, 20); // (1, 3, 2)
+    geometry = new THREE.BoxGeometry(20, 30, 20);
     var mesh = new THREE.Mesh(geometry, materials.get("thigh"));
     mesh.position.set(x, y, z);
 
-    addLeg(mesh, 0, -50, 0); // (x, y, z)
-    addWheel(mesh, x < 0 ? -20 : 20, -45, 0); // (x, y, z)
-    addWheel(mesh, x < 0 ? -20 : 20, -70, 0); // (x, y, z)
-    addFoot(mesh, x, -90, 5); // (x, y, z)
+    addLeg(mesh, 0, -50, 0); 
+    addWheel(mesh, x < 0 ? -20 : 20, -45, 0); 
+    addWheel(mesh, x < 0 ? -20 : 20, -70, 0); 
+    addFoot(mesh, x, -5, 0); 
 
-    mesh.add(leg);
     leg.add(mesh);
     obj.add(leg);
 }
@@ -271,10 +256,10 @@ function createRobot(x, y, z) {
 
     // feet
     feet = new THREE.Object3D();
-    feet.position.set(0, -15, 10);
+    feet.position.set(0, -100, 15);
 
-    addThigh(robot, 20, -10, 10); // (x, y, z)
-    addThigh(robot, -20, -10, 10); // (x, y, z)
+    addThigh(robot, 20, -10, 10); 
+    addThigh(robot, -20, -10, 10); 
 
     scene.add(robot);
 
@@ -373,53 +358,50 @@ function onKeyDown(e) {
   }
 }
 
-
-
 function update(){
   'use strict';
-
+  
   delta = clock.getDelta();
-
   handleRotations(delta);
 }
 
 function handleRotations(delta) {
-    'use strict';
-    if (rotateFeetIn) {
-        feet.rotation.x = THREE.MathUtils.clamp(feet.rotation.x + delta * 5, - Math.PI / 2, 0);
-        rotateFeetIn = false;
-    }
-    if (rotateFeetOut) {
-        feet.rotation.x = THREE.MathUtils.clamp(feet.rotation.x - delta * 5, - Math.PI / 2, 0);
-        rotateFeetOut = false;
-    }
-    if (rotateLegIn) {
-        leg.rotation.x = THREE.MathUtils.clamp(leg.rotation.x + delta * 5, 0, Math.PI / 2);
-        rotateLegIn = false;
-    }
-    if (rotateLegOut) {
-        leg.rotation.x = THREE.MathUtils.clamp(leg.rotation.x - delta * 5, 0, Math.PI / 2);
-        rotateLegOut = false;
-    }
-    if (rotateHeadIn) {
-        head.rotation.x = THREE.MathUtils.clamp(head.rotation.x - delta * 5, -Math.PI / 2, 0);
-        rotateHeadIn = false;
-    }
-    if (rotateHeadOut) {
-        head.rotation.x = THREE.MathUtils.clamp(head.rotation.x + delta * 5, -Math.PI / 2, 0);
-        rotateHeadOut = false;
-    }
-    if (displaceArmsIn) {
-        lArm.position.x = THREE.MathUtils.clamp(lArm.position.x + delta * 50, 25, 45);
-        rArm.position.x = THREE.MathUtils.clamp(rArm.position.x - delta * 50, -45, -25);
-        displaceArmsIn = false;
-    }
-    if (displaceArmsOut) {
-        lArm.position.x = THREE.MathUtils.clamp(lArm.position.x - delta * 50, 25, 45);
-        rArm.position.x = THREE.MathUtils.clamp(rArm.position.x + delta * 50, -45, -25);
-        displaceArmsOut = false;
-    }
-    checkTruckMode();
+  'use strict';
+  if (rotateFeetIn) {
+    feet.rotation.x = THREE.MathUtils.clamp(feet.rotation.x + delta * 5, 0, Math.PI / 2);
+    rotateFeetIn = false;
+  }
+  if (rotateFeetOut) {
+    feet.rotation.x = THREE.MathUtils.clamp(feet.rotation.x - delta * 5, 0, Math.PI / 2);
+    rotateFeetOut = false;
+  }
+  if (rotateLegIn) {
+    leg.rotation.x = THREE.MathUtils.clamp(leg.rotation.x + delta * 5, 0, Math.PI / 2);
+    rotateLegIn = false;
+  }
+  if (rotateLegOut) {
+    leg.rotation.x = THREE.MathUtils.clamp(leg.rotation.x - delta * 5, 0, Math.PI / 2);
+    rotateLegOut = false;
+  }
+  if (rotateHeadIn) {
+    head.rotation.x = THREE.MathUtils.clamp(head.rotation.x - delta * 5, -Math.PI / 2, 0);
+    rotateHeadIn = false;
+  }
+  if (rotateHeadOut) {
+    head.rotation.x = THREE.MathUtils.clamp(head.rotation.x + delta * 5, -Math.PI / 2, 0);
+    rotateHeadOut = false;
+  }
+  if (displaceArmsIn) {
+    lArm.position.x = THREE.MathUtils.clamp(lArm.position.x + delta * 50, 25, 45);
+    rArm.position.x = THREE.MathUtils.clamp(rArm.position.x - delta * 50, -45, -25);
+    displaceArmsIn = false;
+  }
+  if (displaceArmsOut) {
+    lArm.position.x = THREE.MathUtils.clamp(lArm.position.x - delta * 50, 25, 45);
+    rArm.position.x = THREE.MathUtils.clamp(rArm.position.x + delta * 50, -45, -25);
+    displaceArmsOut = false;
+  }
+  checkTruckMode();
 }
 
 function checkTruckMode() {
