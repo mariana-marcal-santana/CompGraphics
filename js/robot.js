@@ -11,6 +11,7 @@ let rotateHeadIn = false, rotateHeadOut = false, rotateLegIn = false, rotateLegO
     trailerMoveLeft = false, trailerMoveRight = false, trailerMoveUp = false, trailerMoveDown = false;
 
 const materials = new Map(), clock = new THREE.Clock();
+var minTruckAABB, maxTruckAABB, minTrailerAABB, maxTrailerAABB;
 var delta;
 
 
@@ -207,7 +208,7 @@ function addLeg(obj, x, y, z) {
     var mesh = new THREE.Mesh(geometry, materials.get("leg").clone());
     mesh.position.set(x, y, z);
     obj.add(mesh);
-}77
+}
 
 function addThigh(obj, x, y, z) {
     'use strict';
