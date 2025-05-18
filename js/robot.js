@@ -11,7 +11,8 @@ let rotateHeadIn = false, rotateHeadOut = false, rotateLegIn = false, rotateLegO
     trailerMoveLeft = false, trailerMoveRight = false, trailerMoveUp = false, trailerMoveDown = false;
 
 const materials = new Map(), clock = new THREE.Clock();
-var minTruckAABB, maxTruckAABB, minTrailerAABB, maxTrailerAABB;
+var minTruckAABB = new THREE.Vector3(-120 / 2 - 40, 0, -70 / 2), maxTruckAABB = new THREE.Vector3(120 / 2 - 40, 80, 70 / 2), minTrailerAABB, maxTrailerAABB;
+
 var delta;
 
 
@@ -304,6 +305,14 @@ function createTrailer(x, y, z) {
     scene.add(trailer);
 
     trailer.position.set(x, y+10, z);
+    updateTrailerAABB();
+}
+
+function updateTrailerAABB() {
+    'use strict';
+    
+    minTrailerAABB = new THREE.Vector3(trailer.position.x - 70 / 2, trailer.position.y - 90 / 2 + 15, trailer.position.z - 150 / 2);
+    maxTrailerAABB = new THREE.Vector3(trailer.position.x + 70 / 2 , trailer.position.y + 90 / 2 + 15, trailer.position.z + 150 / 2);
 }
 
 function onResize() {
@@ -391,7 +400,7 @@ function onKeyUp(e) {
     case 40: // down
       trailerMoveDown = false;
       break;
-      case 81: // q
+    case 81: // q
       rotateFeetIn = false;
       break;
     case 65: // a
@@ -418,12 +427,16 @@ function onKeyUp(e) {
   }
 }
 
-function update(){
+function update() {
   'use strict';
   
   delta = clock.getDelta();
   handleRotations(delta);
   handleTrailerMovement(delta);
+
+  if(robot.userData.truck && checkColisions()) { 
+    connectTrailer();
+  }
 }
 
 function handleTrailerMovement(delta) {
@@ -440,6 +453,7 @@ function handleTrailerMovement(delta) {
   if (trailerMoveDown) {
     trailer.position.y = THREE.MathUtils.clamp(trailer.position.y - delta * 50, -200, 200);
   }
+  updateTrailerAABB();
 }
 
 function handleRotations(delta) {
@@ -497,8 +511,6 @@ function checkTruckMode() {
                             leg.rotation.x ==  - Math.PI / 2 &&
                             feet.rotation.x == - Math.PI / 2 &&
                             lArm.position.x == 25 && rArm.position.x == -25;
-
-    // if (!robot.userData.truck) trailer.userData.engaged = false; 
 }
 
 function render() {
