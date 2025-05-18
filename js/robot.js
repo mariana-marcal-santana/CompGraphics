@@ -291,7 +291,7 @@ function createTrailer(x, y, z) {
     'use strict';
 
     trailer = new THREE.Object3D();
-
+    trailer.userData = {connected: false};
     // trailer body
     trailerBody = new THREE.Object3D();
     trailerBody.position.set(0, 0, 0);
@@ -313,6 +313,14 @@ function updateTrailerAABB() {
     
     minTrailerAABB = new THREE.Vector3(trailer.position.x - 70 / 2, trailer.position.y - 90 / 2 + 15, trailer.position.z - 150 / 2);
     maxTrailerAABB = new THREE.Vector3(trailer.position.x + 70 / 2 , trailer.position.y + 90 / 2 + 15, trailer.position.z + 150 / 2);
+}
+
+function checkCollisions(){
+    'use strict';
+
+    return (maxTruckAABB.x > minTrailerAABB.x && minTruckAABB.x < maxTrailerAABB.x &&
+      maxTruckAABB.y > minTrailerAABB.y && minTruckAABB.y < maxTrailerAABB.y &&
+      maxTruckAABB.z > minTrailerAABB.z && minTruckAABB.z < maxTrailerAABB.z);
 }
 
 function onResize() {
@@ -434,7 +442,7 @@ function update() {
   handleRotations(delta);
   handleTrailerMovement(delta);
 
-  if(robot.userData.truck && checkColisions()) { 
+  if(robot.userData.truck && checkCollisions()) { 
     connectTrailer();
   }
 }
