@@ -12,10 +12,10 @@ let rotateHeadIn = false, rotateHeadOut = false, rotateLegIn = false, rotateLegO
 
 const materials = new Map(), clock = new THREE.Clock();
 
-var minTruckAABB = new THREE.Vector3(-60, -2.5, -127.5), maxTruckAABB = new THREE.Vector3(60, 95, 20);
+var minTruckAABB = new THREE.Vector3(-50, -2.5, -127.5), maxTruckAABB = new THREE.Vector3(50, 95, 20);
 
 var minTrailerAABB = new THREE.Vector3(-60, 0, -35);
-var maxTrailerAABB = new THREE.Vector3(60, 80, 35);
+var maxTrailerAABB = new THREE.Vector3(60, 0, 35);
 var truckAABB = new THREE.Box3(minTruckAABB.clone(), maxTruckAABB.clone());
 
 var trailerAABB = new THREE.Box3(minTrailerAABB.clone(), maxTrailerAABB.clone());
@@ -70,12 +70,12 @@ function createMaterials() {
     materials.set("torso", new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false }));
     materials.set("abdomen", new THREE.MeshBasicMaterial({ color: 0xa6a6a6, wireframe: false }));
     materials.set("waist", new THREE.MeshBasicMaterial({ color: 0xa6a6a6, wireframe: false }));
-    materials.set("arm", new THREE.MeshBasicMaterial({ color: 0x3d0303, wireframe: false }));
-    materials.set("forearm", new THREE.MeshBasicMaterial({ color: 0x3d0303, wireframe: false }));
+    materials.set("arm", new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false }));
+    materials.set("forearm", new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false }));
     materials.set("leg", new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: false }));
     materials.set("thigh", new THREE.MeshBasicMaterial({ color: 0xa6a6a6, wireframe: false }));
     materials.set("head", new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: false }));
-    materials.set("antenna", new THREE.MeshBasicMaterial({ color: 0x0ae032, wireframe: false }));
+    materials.set("antenna", new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false }));
     materials.set("eye", new THREE.MeshBasicMaterial({ color: 0xa6a6a6, wireframe: false }));
     materials.set("foot", new THREE.MeshBasicMaterial({ color: 0x0f40ff, wireframe: false }));
     materials.set("pipe", new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false }));
@@ -139,7 +139,7 @@ function addLowerExhaustPipe(obj, x, y, z) {
 function addForearm(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(20, 30, 20); 
+    geometry = new THREE.BoxGeometry(20, 25, 20); 
     var mesh = new THREE.Mesh(geometry, materials.get("forearm").clone());
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -153,8 +153,8 @@ function addArm(obj, x, y, z) {
     var mesh = new THREE.Mesh(geometry, materials.get("arm").clone());
     mesh.position.set(x, 0, 0);
 
-    addUpperExhaustPipe(mesh, obj.position.x > 0 ? x - 2.5 : x + 2.5, y + 20, z); 
-    addLowerExhaustPipe(mesh, obj.position.x > 0 ? x - 2.5 : x + 2.5, y , z);
+    addUpperExhaustPipe(mesh, obj.position.x > 0 ? x + 2.5 : x - 2.5, y + 20, z); 
+    addLowerExhaustPipe(mesh, obj.position.x > 0 ? x + 2.5 : x - 2.5, y , z);
     addForearm(mesh, 0, y - 27.5, z);
 
     obj.add(mesh);
@@ -164,7 +164,7 @@ function addArm(obj, x, y, z) {
 function addTorso(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(100, 40, 40); 
+    geometry = new THREE.BoxGeometry(90, 40, 40); 
     var mesh = new THREE.Mesh(geometry, materials.get("torso"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -173,9 +173,9 @@ function addTorso(obj, x, y, z) {
 function addAbdomen(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(50, 18, 20); 
+    geometry = new THREE.BoxGeometry(50, 20, 40); 
     var mesh = new THREE.Mesh(geometry, materials.get("abdomen"));
-    mesh.position.set(x, y, z);
+    mesh.position.set(x, y - 1, z);
     obj.add(mesh);
 }
 
@@ -195,7 +195,7 @@ function addWaist(obj, x, y, z) {
     addWheel(obj, x - 40, y-7.5, z); 
     addWheel(obj, x + 40, y-7.5, z); 
 
-    geometry = new THREE.BoxGeometry(70, 25, 20); 
+    geometry = new THREE.BoxGeometry(70, 20, 40); 
     var mesh = new THREE.Mesh(geometry, materials.get("waist"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -242,8 +242,8 @@ function createRobot(x, y, z) {
     robot = new THREE.Object3D();
     robot.userData = {truck: false};
 
-    addWaist(robot, 0, 0, 10); 
-    addAbdomen(robot, 0, 21, 10); 
+    addWaist(robot, 0, 0, 0); 
+    addAbdomen(robot, 0, 21, 0); 
     addTorso(robot, 0, 50, 0); 
 
     // head
@@ -259,8 +259,8 @@ function createRobot(x, y, z) {
     rArm = new THREE.Object3D();
     rArm.position.set(-45, 50, 10);
 
-    addArm(lArm, 15, 0, 0); 
-    addArm(rArm, -15, 0, 0); 
+    addArm(lArm, 10, 0, 0); 
+    addArm(rArm, -10, 0, 0); 
 
     // legs
     leg = new THREE.Object3D();
@@ -284,7 +284,7 @@ function addTrailerBody(obj, x, y, z) {
     var mesh = new THREE.Mesh(geometry, materials.get("trailer").clone());
     mesh.position.set(x, y, z);
     obj.add(mesh);
-2
+
     geometry = new THREE.BoxGeometry(70, 50, 150);
     var mesh = new THREE.Mesh(geometry, materials.get("trailer").clone());
     mesh.position.set(x, y + 30, z + 50);
@@ -321,14 +321,13 @@ function createTrailer(x, y, z) {
 function updateTrailerAABB() {
     'use strict';
     
-    minTrailerAABB = new THREE.Vector3(trailer.position.x - 70 / 2, trailer.position.y - 90 / 2 + 15, trailer.position.z - 150 / 2);
-    maxTrailerAABB = new THREE.Vector3(trailer.position.x + 70 / 2 , trailer.position.y + 90 / 2 + 15, trailer.position.z + 150 / 2);
+    minTrailerAABB = new THREE.Vector3(trailer.position.x - 45, trailer.position.y - 10, trailer.position.z - 75);
+    maxTrailerAABB = new THREE.Vector3(trailer.position.x + 45 , trailer.position.y + 65, trailer.position.z + 75);
     trailerAABB.setFromObject(trailer);
 }
 
 function checkCollisions(){
     'use strict';
-
     return (maxTruckAABB.x > minTrailerAABB.x && minTruckAABB.x < maxTrailerAABB.x &&
       maxTruckAABB.y > minTrailerAABB.y && minTruckAABB.y < maxTrailerAABB.y &&
       maxTruckAABB.z > minTrailerAABB.z && minTruckAABB.z < maxTrailerAABB.z);
@@ -339,10 +338,15 @@ function update() {
   
   delta = clock.getDelta();
   handleRotations(delta);
-  handleTrailerMovement(delta);
-
+  if (!trailer.userData.connected){
+    handleTrailerMovement(delta);
+  }
   if(robot.userData.truck && !trailer.userData.connected) { 
     handleCollisions();
+  }
+  if(!robot.userData.truck){
+    trailer.userData.connected = false;
+    trailer.userData.connecting = false;
   }
   if (trailer.userData.connected && (!checkCollisions() || !robot.userData.truck)){
     const worldPosition = new THREE.Vector3();
@@ -353,7 +357,6 @@ function update() {
     trailer.userData.connected = false;
     trailer.userData.connecting = false;
   }
-  // console.log("colision: " + checkCollisions());
 }
 
 function handleCollisions() {
@@ -367,7 +370,7 @@ function handleCollisions() {
     const direction = new THREE.Vector3().subVectors(target, trailer.position);
     const distance = direction.length();
 
-    if (distance < 0.5) {
+    if (distance < 0.1) {
       trailer.userData.connecting = false;
       trailer.userData.connected = true;
 
@@ -425,12 +428,12 @@ function handleRotations(delta) {
     head.rotation.x = THREE.MathUtils.clamp(head.rotation.x + delta, -Math.PI / 2, 0);
   }
   if (displaceArmsIn) {
-    lArm.position.x = THREE.MathUtils.clamp(lArm.position.x + delta * 25, 30, 45);
-    rArm.position.x = THREE.MathUtils.clamp(rArm.position.x - delta * 25, -45, -30);
+    lArm.position.x = THREE.MathUtils.clamp(lArm.position.x + delta * 25, 25, 45);
+    rArm.position.x = THREE.MathUtils.clamp(rArm.position.x - delta * 25, -45, -25);
   }
   if (displaceArmsOut) {
-    lArm.position.x = THREE.MathUtils.clamp(lArm.position.x - delta * 25, 30, 45);
-    rArm.position.x = THREE.MathUtils.clamp(rArm.position.x + delta * 25, -45, -30);
+    lArm.position.x = THREE.MathUtils.clamp(lArm.position.x - delta * 25, 25, 45);
+    rArm.position.x = THREE.MathUtils.clamp(rArm.position.x + delta * 25, -45, -25);
   }
   checkTruckMode();
 }
@@ -457,7 +460,7 @@ function checkTruckMode() {
     robot.userData.truck = head.rotation.x == -Math.PI / 2 &&
                             leg.rotation.x == Math.PI / 2 &&
                             feet.rotation.x == Math.PI / 2 &&
-                            lArm.position.x == 30 && rArm.position.x == -30
+                            lArm.position.x == 25 && rArm.position.x == -25
 ;
 }
 
