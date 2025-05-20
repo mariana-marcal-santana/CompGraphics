@@ -344,10 +344,7 @@ function update() {
   if(robot.userData.truck && !trailer.userData.connected) { 
     handleCollisions();
   }
-  if(!robot.userData.truck){
-    trailer.userData.connected = false;
-    trailer.userData.connecting = false;
-  }
+  
   if (trailer.userData.connected && (!checkCollisions() || !robot.userData.truck)){
     const worldPosition = new THREE.Vector3();
     trailer.getWorldPosition(worldPosition);
