@@ -440,12 +440,12 @@ function toggleWireframe() {
   scene.traverse((object) => {
     if (object.isMesh) {
 
-      if (Array.isArray(material)) {
-        material.forEach(mat => {
+      if (Array.isArray(object.material)) {
+        object.material.forEach(mat => {
             mat.wireframe = !mat.wireframe;
         });
       } else {
-        material.wireframe = !material.wireframe;
+        object.material.wireframe = !object.material.wireframe;
       }
     }
   });
