@@ -50,8 +50,8 @@ function createCameras() {
       camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
     } 
     else {
-      camera = new THREE.OrthographicCamera(window.innerWidth / -5, window.innerWidth / 5,
-                  window.innerHeight / 5, window.innerHeight / -5, 1, 1000);
+      camera = new THREE.OrthographicCamera(window.innerWidth / -3, window.innerWidth / 3,
+                  window.innerHeight / 3, window.innerHeight / -3, 1, 1000);
     }
 
     camera.position.set(positions[i][0], positions[i][1], positions[i][2]);
