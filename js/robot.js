@@ -86,7 +86,7 @@ function addEye(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(1.5, 1.5, 2, 32); 
-    var mesh = new THREE.Mesh(geometry, materials.get("eye").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("eye"));
     mesh.rotation.x = Math.PI/2 ;
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -96,7 +96,7 @@ function addAntenna(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(2, 2, 15, 10); 
-    var mesh = new THREE.Mesh(geometry, materials.get("antenna").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("antenna"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -122,7 +122,7 @@ function addUpperExhaustPipe(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(2, 2, 20, 15);  
-    var mesh = new THREE.Mesh(geometry, materials.get("pipe").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("pipe"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -131,7 +131,7 @@ function addLowerExhaustPipe(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(2.5, 2.5, 30, 15);  
-    var mesh = new THREE.Mesh(geometry, materials.get("pipeLower").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("pipeLower"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -140,7 +140,7 @@ function addForearm(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.BoxGeometry(20, 25, 20); 
-    var mesh = new THREE.Mesh(geometry, materials.get("forearm").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("forearm"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -150,7 +150,7 @@ function addArm(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.BoxGeometry(20, 40, 20); 
-    var mesh = new THREE.Mesh(geometry, materials.get("arm").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("arm"));
     mesh.position.set(x, 0, 0);
 
     addUpperExhaustPipe(mesh, obj.position.x > 0 ? x + 2.5 : x - 2.5, y + 20, z); 
@@ -183,7 +183,7 @@ function addWheel(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.CylinderGeometry(10, 10, 10, 15);  
-    var mesh = new THREE.Mesh(geometry, materials.get("wheel").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("wheel"));
     mesh.rotation.z = Math.PI / 2;
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -205,7 +205,7 @@ function addFoot(obj, x, y, z) {
     'use strict';
     
     geometry = new THREE.BoxGeometry(35, 20, 30); 
-    var mesh = new THREE.Mesh(geometry, materials.get("foot").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("foot"));
     mesh.position.set(x, y, z);
     feet.add(mesh);
     leg.add(feet); 
@@ -215,7 +215,7 @@ function addLeg(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.BoxGeometry(30, 75, 20); 
-    var mesh = new THREE.Mesh(geometry, materials.get("leg").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("leg"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
 }
@@ -224,7 +224,7 @@ function addThigh(obj, x, y, z) {
     'use strict';
 
     geometry = new THREE.BoxGeometry(20, 35, 20);
-    var mesh = new THREE.Mesh(geometry, materials.get("thigh").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("thigh"));
     mesh.position.set(x, y-10, z);
 
     addLeg(mesh, 0, -55, 0); 
@@ -281,17 +281,17 @@ function createRobot(x, y, z) {
 function addTrailerBody(obj, x, y, z) {
     'use strict';
     geometry = new THREE.BoxGeometry(70, 20, 50);
-    var mesh = new THREE.Mesh(geometry, materials.get("trailer").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("trailer"));
     mesh.position.set(x, y, z);
     obj.add(mesh);
 
     geometry = new THREE.BoxGeometry(70, 50, 150);
-    var mesh = new THREE.Mesh(geometry, materials.get("trailer").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("trailer"));
     mesh.position.set(x, y + 30, z + 50);
     obj.add(mesh);
 
     geometry = new THREE.BoxGeometry(25, 10, 10);
-    var mesh = new THREE.Mesh(geometry, materials.get("trailerPiece").clone());
+    var mesh = new THREE.Mesh(geometry, materials.get("trailerPiece"));
     mesh.position.set(x, y , z + 120);
     obj.add(mesh);
 }
@@ -437,18 +437,11 @@ function handleRotations(delta) {
 
 function toggleWireframe() {
   'use strict';
-  scene.traverse((object) => {
-    if (object.isMesh) {
 
-      if (Array.isArray(object.material)) {
-        object.material.forEach(mat => {
-            mat.wireframe = !mat.wireframe;
-        });
-      } else {
-        object.material.wireframe = !object.material.wireframe;
-      }
+  materials.forEach((material) => {
+      material.wireframe = !material.wireframe;
     }
-  });
+  );
 }
 
 function checkTruckMode() {
