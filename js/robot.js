@@ -42,7 +42,7 @@ function createScene() {
 
 function createCameras() {
   'use strict';
-
+  // TODO : só 1 camara
   const positions = [[0, 0, 100], [100, 0, 0], [0, 150, 0], [300, 300, 300]]
 
   for (let i = 0; i < 4; i++) {
@@ -69,9 +69,9 @@ function createMaterials() {
     materials.set("wheel", new THREE.MeshBasicMaterial({ color: 0x00000, wireframe: false }));
     materials.set("torso", new THREE.MeshBasicMaterial({ color: 0xff0000, wireframe: false }));
     materials.set("abdomen", new THREE.MeshBasicMaterial({ color: 0xa6a6a6, wireframe: false }));
-    materials.set("waist", new THREE.MeshBasicMaterial({ color: 0xa6a6a6, wireframe: false }));
+    materials.set("waist", new THREE.MeshBasicMaterial({ color: 0xbbbbbb, wireframe: false }));
     materials.set("arm", new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false }));
-    materials.set("forearm", new THREE.MeshBasicMaterial({ color: 0x808080, wireframe: false }));
+    materials.set("forearm", new THREE.MeshBasicMaterial({ color: 0xbbbbbb, wireframe: false }));
     materials.set("leg", new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: false }));
     materials.set("thigh", new THREE.MeshBasicMaterial({ color: 0xa6a6a6, wireframe: false }));
     materials.set("head", new THREE.MeshBasicMaterial({ color: 0x0000ff, wireframe: false }));
@@ -155,7 +155,7 @@ function addArm(obj, x, y, z) {
 
     addUpperExhaustPipe(mesh, obj.position.x > 0 ? x + 2.5 : x - 2.5, y + 20, z); 
     addLowerExhaustPipe(mesh, obj.position.x > 0 ? x + 2.5 : x - 2.5, y , z);
-    addForearm(mesh, 0, y - 27.5, z);
+    addForearm(mesh, 0, y - 32.5, z);
 
     obj.add(mesh);
     robot.add(obj);
@@ -214,7 +214,7 @@ function addFoot(obj, x, y, z) {
 function addLeg(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(30, 70, 20); 
+    geometry = new THREE.BoxGeometry(30, 75, 20); 
     var mesh = new THREE.Mesh(geometry, materials.get("leg").clone());
     mesh.position.set(x, y, z);
     obj.add(mesh);
@@ -223,7 +223,7 @@ function addLeg(obj, x, y, z) {
 function addThigh(obj, x, y, z) {
     'use strict';
 
-    geometry = new THREE.BoxGeometry(20, 40, 20);
+    geometry = new THREE.BoxGeometry(20, 35, 20);
     var mesh = new THREE.Mesh(geometry, materials.get("thigh").clone());
     mesh.position.set(x, y-10, z);
 
@@ -270,8 +270,8 @@ function createRobot(x, y, z) {
     feet = new THREE.Object3D();
     feet.position.set(0, -112.5, 15);
 
-    addThigh(robot, 20, -10, 10); 
-    addThigh(robot, -20, -10, 10); 
+    addThigh(robot, 20, -25, 10); 
+    addThigh(robot, -20, -25, 10); 
 
     scene.add(robot);
 
