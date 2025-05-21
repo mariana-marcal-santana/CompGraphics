@@ -1,6 +1,6 @@
 import * as THREE from "three";
 
-var cameras = [], camera, scene, renderer;
+var camera, scene, renderer;
 
 var geometry;
 
@@ -11,6 +11,7 @@ let rotateHeadIn = false, rotateHeadOut = false, rotateLegIn = false, rotateLegO
     trailerMoveLeft = false, trailerMoveRight = false, trailerMoveUp = false, trailerMoveDown = false;
 
 const materials = new Map(), clock = new THREE.Clock();
+const positions = [[0, 0, 100], [100, 0, 0], [0, 150, 0], [300, 300, 300]]
 
 var minTruckAABB = new THREE.Vector3(-50, -2.5, -127.5), maxTruckAABB = new THREE.Vector3(50, 95, 20);
 
@@ -37,29 +38,28 @@ function createScene() {
   scene.background = new THREE.Color(0xf0f0f0);
 
   createRobot(0, 15, 0);
-  createTrailer(0, -105, -150);
+  createTrailer(0, 7.5, -200);
 }
 
-function createCameras() {
+function createCameras(i) {
   'use strict';
-  // TODO : só 1 camara
-  const positions = [[0, 0, 100], [100, 0, 0], [0, 150, 0], [300, 300, 300]]
 
-  for (let i = 0; i < 4; i++) {
-    if (i == 3) {
-      camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
-    } 
-    else {
-      camera = new THREE.OrthographicCamera(window.innerWidth / -3, window.innerWidth / 3,
-                  window.innerHeight / 3, window.innerHeight / -3, 1, 1000);
-    }
+  if (i == 3) {
+    camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
+  } 
+  else 
+    camera = new THREE.OrthographicCamera(window.innerWidth / -3, window.innerWidth / 3,
+                window.innerHeight / 3, window.innerHeight / -3, 1, 1000);
 
-    camera.position.set(positions[i][0], positions[i][1], positions[i][2]);
+
+    //camera.x.position.set(positions[i][0], positions[i][1], positions[i][2]);
+    camera.position.x = positions[i][0];
+    camera.position.y = positions[i][1];
+    camera.position.z = positions[i][2];
     camera.lookAt(scene.position);
-    cameras.push(camera);
-  }
-  camera = cameras[0];
+
 }
+
 
 function createMaterials() {
     'use strict';
@@ -314,7 +314,7 @@ function createTrailer(x, y, z) {
 
     scene.add(trailer);
 
-    trailer.position.set(x, y+10, z);
+    trailer.position.set(x, y, z);
     updateTrailerAABB();
 }
 
@@ -396,10 +396,10 @@ function handleTrailerMovement(delta) {
     trailer.position.x = THREE.MathUtils.clamp(trailer.position.x + delta * 50, -200, 200); 
   }
   if (trailerMoveUp) {
-    trailer.position.y = THREE.MathUtils.clamp(trailer.position.y + delta * 50, -200, 200);
+    trailer.position.z = THREE.MathUtils.clamp(trailer.position.z + delta * 50, -200, 200);
   }
   if (trailerMoveDown) {
-    trailer.position.y = THREE.MathUtils.clamp(trailer.position.y - delta * 50, -200, 200);
+    trailer.position.z = THREE.MathUtils.clamp(trailer.position.z - delta * 50, -200, 200);
   }
   updateTrailerAABB();
 }
@@ -477,16 +477,16 @@ function onKeyDown(e) {
 
   switch (e.keyCode) {
     case 49: //1
-      camera = cameras[0];
+      createCameras(0);
       break;
     case 50: //2
-      camera = cameras[1];
+      createCameras(1);
       break;
     case 51: //3
-      camera = cameras[2];
+      createCameras(2);
       break;
     case 52: //4
-      camera = cameras[3];
+      createCameras(3);
       break;
     case 81: // q
       rotateFeetIn = true;
@@ -591,7 +591,7 @@ function init() {
 
   createMaterials();
   createScene();
-  createCameras();
+  createCameras(0);
 
   window.addEventListener("keydown", onKeyDown);
   window.addEventListener("keyup", onKeyUp);
