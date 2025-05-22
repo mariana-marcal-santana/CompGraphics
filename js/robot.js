@@ -14,9 +14,9 @@ var constLegIn = 0, constLegOut = 0, constArmIn = 0, constArmOut = 0;
 var constLeft = 0, constRight = 0, constUp = 0, constDown = 0;
 
 const materials = new Map(), clock = new THREE.Clock();
-const positions = [[0, 0, 100], [100, 0, 0], [0, 200, 0], [300, 300, 300]]
+const positions = [[0, 0, 100], [100, 0, 0], [0, 150, 0], [300, 300, 300]]
 var currentCamera = -1;
-var minTruckAABB = new THREE.Vector3(-50, -2.5, -127.5), maxTruckAABB = new THREE.Vector3(50, 95, 20);
+var minTruckAABB = new THREE.Vector3(-50, -2.5, -130), maxTruckAABB = new THREE.Vector3(50, 95, 20);
 
 var minTrailerAABB, maxTrailerAABB;
 
@@ -40,8 +40,8 @@ function createCameras(i) {
   'use strict';
 
   if (currentCamera == -1) { // camera inicialization
-    camera = new THREE.OrthographicCamera(window.innerWidth / -3, window.innerWidth / 3,
-                window.innerHeight / 3, window.innerHeight / -3, 1, 1000); 
+    camera = new THREE.OrthographicCamera(window.innerWidth / -2.5, window.innerWidth / 2.5,
+                window.innerHeight / 2.5, window.innerHeight / -2.5, 1, 1000); 
   }
     
   if (i == currentCamera) return;
@@ -50,8 +50,8 @@ function createCameras(i) {
     camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
   } 
   else if (currentCamera == 3) {
-    camera = new THREE.OrthographicCamera(window.innerWidth / -3, window.innerWidth / 3,
-                window.innerHeight / 3, window.innerHeight / -3, 1, 1000);
+    camera = new THREE.OrthographicCamera(window.innerWidth / -2.5, window.innerWidth / 2.5,
+                window.innerHeight / 2.5, window.innerHeight / -2.5, 1, 1000);
   }
 
   currentCamera = i;
@@ -310,8 +310,8 @@ function createTrailer(x, y, z) {
 function updateTrailerAABB() {
     'use strict';
     
-    minTrailerAABB = new THREE.Vector3(trailer.position.x - 45, trailer.position.y - 10, trailer.position.z - 75);
-    maxTrailerAABB = new THREE.Vector3(trailer.position.x + 45 , trailer.position.y + 65, trailer.position.z + 75);
+    minTrailerAABB = new THREE.Vector3(trailer.position.x - 45, trailer.position.y, trailer.position.z - 10);
+    maxTrailerAABB = new THREE.Vector3(trailer.position.x + 45 , trailer.position.y, trailer.position.z + 140);
 }
 
 function checkCollisions(){
@@ -326,6 +326,7 @@ function update() {
   
   delta = clock.getDelta();
   handleRotations(delta);
+  
   if (!trailer.userData.connected){
     handleTrailerMovement(delta);
   }
@@ -379,10 +380,10 @@ function handleTrailerMovement(delta) {
   'use strict';
 
   if (trailerMoveInX) {
-    trailer.position.x = THREE.MathUtils.clamp(trailer.position.x + (constLeft + constRight) * delta * 50, -200, 200);
+    trailer.position.x = THREE.MathUtils.clamp(trailer.position.x + (constLeft + constRight) * delta * 50, -300, 300);
   }
   if (trailerMoveInZ) {
-    trailer.position.z = THREE.MathUtils.clamp(trailer.position.z + (constUp + constDown) * delta * 50, -200, 200);
+    trailer.position.z = THREE.MathUtils.clamp(trailer.position.z + (constUp + constDown) * delta * 50, -350, 250);
   }
  
   updateTrailerAABB();
