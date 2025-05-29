@@ -8,10 +8,12 @@ import * as THREE from "three";
 /* GLOBAL VARIABLES */
 //////////////////////
 var cameras = [];
-let scene, camera, renderer, plane;
+let scene, camera, renderer;
 var terrain, skydome, geometry, mesh;
 const materials = new Map(), clock = new THREE.Clock();
 var delta;
+
+const skydomeRadius = 100;
 
 /////////////////////
 /* CREATE SCENE(S) */
@@ -19,17 +21,14 @@ var delta;
 function createScene() {
     'use strict';
     scene = new THREE.Scene();
-    scene.background = new THREE.Color('#262626');
-
-    const ambientLight = new THREE.AmbientLight(0x404040, 1.0); // Soft white light
-    scene.add(ambientLight);   
-
+    scene.background = new THREE.Color('#ffffff');
     const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
     directionalLight.position.set(1, 1, 1).normalize();
     scene.add(directionalLight);   
 
-    createSkydome(0, -5, 0);
-    createTerrain(0, -6.7, 0);
+    createSkydome(0, 0, 0);
+    createTerrain(0, 0, 0);
+
 }
 
 //////////////////////
@@ -38,7 +37,7 @@ function createScene() {
 function createCameras() {
     'use strict';
     const positions = new Array(new Array(0, 0, -50), // lateral (criação de texturas)
-                                new Array(35, 25, 35)); // perspetiva isométrica - projeção ortogonal (cena principal); 
+                                new Array(50, 20, 50)); // perspetiva isométrica - projeção ortogonal (cena principal); 
 
     for (let i = 0; i < 2; i++) {
         if (i == 1) {
@@ -73,20 +72,19 @@ function createMaterials() {
     const texture = loader.load('js/heightmap/heightmap1.png');
 
     materials.set("skydome", new THREE.MeshPhongMaterial({wireframe: false, side: THREE.DoubleSide }));
-    materials.set("terrain", new THREE.MeshPhongMaterial({wireframe: false, side: THREE.DoubleSide, bumpMap: texture, bumpScale: -20, displacementMap: texture, displacementScale: 20}));
+    materials.set("terrain", new THREE.MeshPhongMaterial({wireframe: false, side: THREE.DoubleSide, bumpMap: texture, bumpScale: -10, displacementMap: texture, displacementScale: 10}));
 }
 
 
 function createTerrain(x, y, z) {
     'use strict';
+
     terrain = new THREE.Object3D();
-    geometry = new THREE.PlaneGeometry(150, 150, 100, 100);
-    
+    const geometry = new THREE.CircleGeometry(skydomeRadius, 32);
     mesh = new THREE.Mesh(geometry, materials.get("terrain"));
 
     terrain.add(mesh);
-    terrain.rotation.x = 3*Math.PI / 2;
-    terrain.position.set(x, y, z);
+    terrain.rotation.x = 3 * Math.PI / 2; // put the terrain flat
     scene.add(terrain);
 }
 
@@ -95,7 +93,7 @@ function createSkydome(x, y , z) {
 
     skydome = new THREE.Object3D();
 
-    geometry = new THREE.SphereGeometry(70, 32, 16, 0, 2 * Math.PI, 0, 0.5 * Math.PI);
+    geometry = new THREE.SphereGeometry(skydomeRadius, 32, 16, 0, 2 * Math.PI, 0, 0.5 * Math.PI);
     
     mesh = new THREE.Mesh(geometry, materials.get("skydome"));
 
@@ -137,20 +135,25 @@ function init() {
     renderer = new THREE.WebGLRenderer({
         antialias: true
     });
-    renderer.setPixelRatio(window.devicePixelRatio); 
+    renderer.localClippingEnabled = true;
+
+    //renderer.setPixelRatio(window.devicePixelRatio); 
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.outputEncoding = THREE.sRGBEncoding;
     document.body.appendChild(renderer.domElement);
 
-    renderer.xr.enabled = true;    
+    // renderer.xr.enabled = true;    
     // document.body.appendChild(VRButton.createButton(renderer));
 
     createMaterials();
     createScene();
     createCameras();
 
+    generateFieldTexture();
+    generateSkyTexture();
+
     window.addEventListener("keydown", onKeyDown);
-    // window.addEventListener("keyup", onKeyUp);
+    window.addEventListener("keyup", onKeyUp);
     window.addEventListener("resize", onResize);
 }
 
@@ -216,10 +219,10 @@ function generateFieldTexture() {
 
     // Flores
     const colors = ['white', 'yellow', 'violet', 'lightblue'];
-    for (let i = 0; i < 500; i++) {
+    for (let i = 0; i < 3000; i++) {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        const radius = Math.random() * 2 + 1;
+        const radius = Math.random();
         ctx.beginPath();
         ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
         ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -243,10 +246,10 @@ function generateSkyTexture() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
 
     // Estrelas brancas
-    for (let i = 0; i < 500; i++) {
+    for (let i = 0; i < 1000; i++) {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        const radius = Math.random() * 1.5 + 0.5;
+        const radius = Math.random();
         ctx.beginPath();
         ctx.fillStyle = 'white';
         ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -279,6 +282,5 @@ function applyCanvasTexture(canvas, target) {
 }
 
 init();
-generateFieldTexture();
-generateSkyTexture();
+
 animate();
