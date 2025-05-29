@@ -9,7 +9,7 @@ import * as THREE from "three";
 //////////////////////
 var cameras = [];
 let scene, camera, renderer, plane;
-var terrain, geometry, mesh;
+var terrain, skydome, geometry, mesh;
 const materials = new Map(), clock = new THREE.Clock();
 var delta;
 
@@ -20,12 +20,15 @@ function createScene() {
     'use strict';
     scene = new THREE.Scene();
     scene.background = new THREE.Color('#262626');
+
     const ambientLight = new THREE.AmbientLight(0x404040, 1.0); // Soft white light
-    scene.add(ambientLight);    
+    scene.add(ambientLight);   
+
     const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
     directionalLight.position.set(1, 1, 1).normalize();
-    scene.add(directionalLight);    
+    scene.add(directionalLight);   
 
+    createSkydome(0, -5, 0);
     createTerrain(0, -6.7, 0);
 }
 
@@ -69,13 +72,14 @@ function createMaterials() {
     const loader = new THREE.TextureLoader();
     const texture = loader.load('js/heightmap/heightmap1.png');
 
+    materials.set("skydome", new THREE.MeshPhongMaterial({wireframe: false, side: THREE.DoubleSide }));
     materials.set("terrain", new THREE.MeshPhongMaterial({wireframe: false, side: THREE.DoubleSide, bumpMap: texture, bumpScale: -20, displacementMap: texture, displacementScale: 20}));
 }
 
 
 function createTerrain(x, y, z) {
     'use strict';
-    terrain = new THREE.Object3D;
+    terrain = new THREE.Object3D();
     geometry = new THREE.PlaneGeometry(150, 150, 100, 100);
     
     mesh = new THREE.Mesh(geometry, materials.get("terrain"));
@@ -84,6 +88,21 @@ function createTerrain(x, y, z) {
     terrain.rotation.x = 3*Math.PI / 2;
     terrain.position.set(x, y, z);
     scene.add(terrain);
+}
+
+function createSkydome(x, y , z) {
+    'use strict';
+
+    skydome = new THREE.Object3D();
+
+    geometry = new THREE.SphereGeometry(70, 32, 16, 0, 2 * Math.PI, 0, 0.5 * Math.PI);
+    
+    mesh = new THREE.Mesh(geometry, materials.get("skydome"));
+
+    skydome.add(mesh);
+    skydome.position.set(x, y, z);
+
+    scene.add(skydome);
 }
 
 
@@ -207,7 +226,7 @@ function generateFieldTexture() {
         ctx.fill();
     }
 
-    applyCanvasTexture(canvas);
+    applyCanvasTexture(canvas, 'terrain');
 }
 
 function generateSkyTexture() {
@@ -225,27 +244,28 @@ function generateSkyTexture() {
 
     // Estrelas brancas
     for (let i = 0; i < 500; i++) {
-    const x = Math.random() * canvas.width;
-    const y = Math.random() * canvas.height;
-    const radius = Math.random() * 1.5 + 0.5;
-    ctx.beginPath();
-    ctx.fillStyle = 'white';
-    ctx.arc(x, y, radius, 0, Math.PI * 2);
-    ctx.fill();
+        const x = Math.random() * canvas.width;
+        const y = Math.random() * canvas.height;
+        const radius = Math.random() * 1.5 + 0.5;
+        ctx.beginPath();
+        ctx.fillStyle = 'white';
+        ctx.arc(x, y, radius, 0, Math.PI * 2);
+        ctx.fill();
     }
 
-    applyCanvasTexture(canvas);
+    applyCanvasTexture(canvas, 'skydome');
 }
 
-function applyCanvasTexture(canvas) {
+function applyCanvasTexture(canvas, target) {
     const texture = new THREE.CanvasTexture(canvas);
     texture.minFilter = THREE.LinearFilter;
     texture.magFilter = THREE.LinearFilter;
 
-    const mesh = terrain.children[0]; // terrain is an Object3D containing the mesh
-    if (!mesh) {
-        console.warn("No mesh found in terrain.");
-        return;
+    let mesh;
+    if (target === 'terrain') {
+        mesh = terrain.children[0];
+    } else if (target === 'skydome') {
+        mesh = skydome.children[0];
     }
 
     // Dispose old texture if it exists
@@ -260,4 +280,5 @@ function applyCanvasTexture(canvas) {
 
 init();
 generateFieldTexture();
+generateSkyTexture();
 animate();
