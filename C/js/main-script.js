@@ -20,6 +20,11 @@ function createScene() {
     'use strict';
     scene = new THREE.Scene();
     scene.background = new THREE.Color('#262626');
+    const ambientLight = new THREE.AmbientLight(0x404040, 1.0); // Soft white light
+    scene.add(ambientLight);    
+    const directionalLight = new THREE.DirectionalLight(0xffffff, 5);
+    directionalLight.position.set(1, 1, 1).normalize();
+    scene.add(directionalLight);    
 
     createTerrain(0, -6.7, 0);
 }
@@ -64,7 +69,7 @@ function createMaterials() {
     const loader = new THREE.TextureLoader();
     const texture = loader.load('js/heightmap/heightmap1.png');
 
-    materials.set("terrain", new THREE.MeshPhongMaterial({wireframe: false, side: THREE.DoubleSide, bumpMap: texture, bumpScale: 5, displacementMap: texture, displacementScale: 20}));
+    materials.set("terrain", new THREE.MeshPhongMaterial({wireframe: false, side: THREE.DoubleSide, bumpMap: texture, bumpScale: -20, displacementMap: texture, displacementScale: 20}));
 }
 
 
