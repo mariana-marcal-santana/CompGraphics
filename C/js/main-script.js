@@ -29,6 +29,7 @@ function createScene() {
     createSkydome();
     createTerrain();
     createMoon();
+    createTrees();
 }
 
 //////////////////////
@@ -114,6 +115,52 @@ function createMoon() {
 
     moonMesh.position.set(40, 35, -30);
     scene.add(moonMesh);
+}
+
+function createTrees() {
+    'use strict';
+    
+    createTree(10, 5, 10, 10, 0);
+    createTree(15, 15, 20, 10, -10);
+    createTree(7.5, 5, -10, 10, 0);
+    createTree(12, 5, -25, 10, 10);
+    createTree(15, 5, 20, 7.5, -60);
+    createTree(15, 5, 40, 7.5, -60);
+    createTree(15, 5, 50, 5, -80);
+}
+
+function createTree(height, rotation, x, y, z) {
+    'use strict';
+
+    const trunkMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 });
+
+    const mainTrunkGeometry = new THREE.CylinderGeometry(1, 1, height, 8);
+    const mainTrunkMesh = new THREE.Mesh(mainTrunkGeometry, trunkMaterial);
+    mainTrunkMesh.position.set(x, y + height / 2, z);
+
+    const secondaryTrunkGeometry = new THREE.CylinderGeometry(0.75, 0.75, 0.5 * height, 8);
+    const secondaryTrunkMesh = new THREE.Mesh(secondaryTrunkGeometry, trunkMaterial);
+    secondaryTrunkMesh.position.set(x, y + height / 2, z - 0.25 * height);
+    secondaryTrunkMesh.rotation.y = rotation;
+    secondaryTrunkMesh.rotation.x = 5;
+
+    const leavesMaterial = new THREE.MeshPhongMaterial({ color: 0x228B22 });
+
+    const mainLeavesGeometry = new THREE.SphereGeometry(0.5 * height, 8, 8);
+    const mainLeavesMesh = new THREE.Mesh(mainLeavesGeometry, leavesMaterial);
+    mainLeavesGeometry.scale(1, 0.5, 1);
+    mainLeavesMesh.position.set(x, y + height, z);
+
+    const secondaryLeavesGeometry = new THREE.SphereGeometry(0.25 * height, 8, 8);
+    const secondaryLeavesMesh = new THREE.Mesh(secondaryLeavesGeometry, leavesMaterial);
+    secondaryLeavesGeometry.scale(1, 0.5, 1);
+    secondaryLeavesMesh.position.set(x, y + 0.65 * height, z - 0.5 * height);
+    secondaryLeavesMesh.rotation.y = rotation;
+
+    scene.add(mainTrunkMesh);
+    scene.add(secondaryTrunkMesh);
+    scene.add(mainLeavesMesh);
+    scene.add(secondaryLeavesMesh);
 }
 
 
