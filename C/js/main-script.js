@@ -1,8 +1,4 @@
 import * as THREE from "three";
-// import { OrbitControls } from "three/addons/controls/OrbitControls.js";
-// import { VRButton } from "three/addons/webxr/VRButton.js";
-// import * as Stats from "three/addons/libs/stats.module.js";
-// import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
 //////////////////////
 /* GLOBAL VARIABLES */
@@ -30,6 +26,7 @@ function createScene() {
     createTerrain();
     createMoon();
     createTrees();
+    createHouse(0,10,40);
 }
 
 //////////////////////
@@ -38,7 +35,7 @@ function createScene() {
 function createCameras() {
     'use strict';
     const positions = new Array(new Array(0, 0, 0), // lateral (criação de texturas)
-                                new Array(50, 20, 50)); // perspetiva isométrica - projeção ortogonal (cena principal); 
+                                new Array(50, 25, 50)); // perspetiva isométrica - projeção ortogonal (cena principal); 
 
     for (let i = 0; i < 2; i++) {
         if (i == 1) {
@@ -131,7 +128,7 @@ function createTrees() {
 
 function createTree(height, rotation, x, y, z) {
     'use strict';
-
+    
     const trunkMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 });
 
     const mainTrunkGeometry = new THREE.CylinderGeometry(1, 1, height, 8);
@@ -163,6 +160,72 @@ function createTree(height, rotation, x, y, z) {
     scene.add(secondaryLeavesMesh);
 }
 
+function createHouse(x, y, z) {
+    'use strict';
+
+    const houseGroup = new THREE.Group();
+
+    const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xf0f0f0, side: THREE.DoubleSide });
+    // const borderMaterial = new THREE.MeshPhongMaterial({ color: 0x1a66ff, side: THREE.DoubleSide });
+    const roofMaterial = new THREE.MeshPhongMaterial({ color: 0xff6600, side: THREE.DoubleSide });
+    const doorWindowMaterial = new THREE.MeshPhongMaterial({ color: 0x3399ff, side: THREE.DoubleSide });
+
+    // Corpo da casa
+    const bodyGeometry = new THREE.BoxGeometry(18, 8, 6);
+    const bodyMesh = new THREE.Mesh(bodyGeometry, wallMaterial);
+    bodyMesh.position.set(0, 4, 0);  
+    houseGroup.add(bodyMesh);
+
+    // // Bordado 
+    // const borderGeometry = new THREE.BoxGeometry(18, 2, 6);
+    // const borderMesh = new THREE.Mesh(borderGeometry, borderMaterial);
+    // borderMesh.position.set(0, 0.5, 0);
+    // houseGroup.add(borderMesh);
+
+    // Telhado
+    const roofHeight = 4;
+    const roofShape = new THREE.Shape();
+    roofShape.moveTo(-9, 0);  
+    roofShape.lineTo(0, roofHeight);
+    roofShape.lineTo(9, 0);
+    roofShape.lineTo(-9, 0);
+
+    const extrudeSettings = { depth: 6, bevelEnabled: false };
+    const roofGeometry = new THREE.ExtrudeGeometry(roofShape, extrudeSettings);
+    const roofMesh = new THREE.Mesh(roofGeometry, roofMaterial);
+    roofMesh.position.set(0, 8, -3); 
+    houseGroup.add(roofMesh);
+
+    // Porta 
+    const doorGeometry = new THREE.PlaneGeometry(3, 4);
+    const doorMesh = new THREE.Mesh(doorGeometry, doorWindowMaterial);
+    doorMesh.position.set(0, 2, 3.01);
+    houseGroup.add(doorMesh);
+
+    // Janelas 
+    const windowGeometry = new THREE.PlaneGeometry(2, 2);
+
+    const windowMeshFarLeft = new THREE.Mesh(windowGeometry, doorWindowMaterial);
+    windowMeshFarLeft.position.set(-7, 5, 3.01);  
+    houseGroup.add(windowMeshFarLeft);
+
+    const windowMeshLeft = new THREE.Mesh(windowGeometry, doorWindowMaterial);
+    windowMeshLeft.position.set(-3.5, 5, 3.01);
+    houseGroup.add(windowMeshLeft);
+
+    const windowMeshRight = new THREE.Mesh(windowGeometry, doorWindowMaterial);
+    windowMeshRight.position.set(3.5, 5, 3.01);
+    houseGroup.add(windowMeshRight);
+
+    const windowMeshFarRight = new THREE.Mesh(windowGeometry, doorWindowMaterial);
+    windowMeshFarRight.position.set(7, 5, 3.01);
+    houseGroup.add(windowMeshFarRight);
+
+    houseGroup.position.set(x, y, z);
+    houseGroup.rotation.y = Math.PI / 4;
+
+    scene.add(houseGroup);
+}
 
 //////////////////////
 /* CHECK COLLISIONS */
@@ -242,13 +305,14 @@ function onResize() {
 ///////////////////////
 function onKeyDown(e) {
     'use strict';
-    switch (e.keyCode) {}
+    
     if (e.key === '1') {
         generateFieldTexture();
-    } else if (e.key === '2') {
+    } 
+    else if (e.key === '2') {
         generateSkyTexture();
-    } else if (e.key === 'D' || e.key === 'd') {
-        console.log('Toggling directional light');
+    } 
+    else if (e.key === 'D' || e.key === 'd') {
         toggleDirectionalLight();
     }
 }
@@ -328,7 +392,7 @@ function applyCanvasTexture(canvas, target) {
     mesh.material.map = texture;
     mesh.material.needsUpdate = true;
 
-    render();
+    // render();
 }
 
 init();
