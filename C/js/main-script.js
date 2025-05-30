@@ -6,8 +6,10 @@ import * as THREE from "three";
 var cameras = [];
 let scene, camera, renderer;
 var terrain, skydome, geometry, mesh;
+let ovni, pointLights = [], spotLight, spotTarget;
 const clock = new THREE.Clock();
 var delta;
+var ovnimov = false, moveovniR = 0,moveovniL = 0, ovnispeed = 10, numLights = 6;
 var isDirectionalLightOn = false, directionalLight;
 const radius = 150;
 const loader = new THREE.TextureLoader();
@@ -27,6 +29,7 @@ function createScene() {
     createMoon();
     createTrees();
     createHouse(0,10,40);
+    createOvni();
 }
 
 //////////////////////
@@ -227,6 +230,59 @@ function createHouse(x, y, z) {
     scene.add(houseGroup);
 }
 
+function createOvni(){
+    'use strict';
+    ovni =  new THREE.Group();
+
+    const bodyGeometry = new THREE.SphereGeometry(3, 32, 16);
+    const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x999999 });
+    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    body.scale.y = 0.4;
+    ovni.add(body);
+
+    const cockpitGeometry = new THREE.SphereGeometry(1.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+    const cockpitMaterial = new THREE.MeshPhongMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 });
+    const cockpit = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
+    ovni.add(cockpit);
+
+    const centerCylinderGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 16);
+    const centerCylinder = new THREE.Mesh(centerCylinderGeometry, bodyMaterial);
+    centerCylinder.position.y = -1.2;
+    ovni.add(centerCylinder);
+
+    const radius = 2.2;
+    for (let i = 0; i < numLights; i++) {
+        const angle = (i / numLights) * 2 * Math.PI;
+        const x = Math.cos(angle) * radius;
+        const z = Math.sin(angle) * radius;
+
+        const luzGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+        const luz = new THREE.Mesh(luzGeometry, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
+        luz.position.set(x, -1.2, z);
+        ovni.add(luz);
+
+        const pointLight = new THREE.PointLight(0xffffaa, 1, 10);
+        pointLight.position.copy(luz.position);
+        ovni.add(pointLight);
+        pointLights.push(pointLight);
+    }
+
+    spotLight = new THREE.SpotLight(0xff0000, 4, 30, Math.PI / 4, 0.2);
+    spotLight.position.set(0, -1, 0);
+    spotLight.castShadow = true;
+    ovni.add(spotLight);
+
+    spotTarget = new THREE.Object3D();
+    spotTarget.position.set(0, -3, 0);
+    scene.add(spotTarget);
+
+    spotLight.target = spotTarget;
+    ovni.add(spotLight);
+
+    ovni.position.set(0, 35, 0);
+    scene.add(ovni);
+
+}
 //////////////////////
 /* CHECK COLLISIONS */
 //////////////////////
@@ -237,6 +293,17 @@ function checkCollisions() {}
 ///////////////////////
 function handleCollisions() {}
 
+function ovni_movement(delta){
+    console.log("OVNI:", ovnimov);
+    if(ovnimov){
+        //ovni.position.x = THREE.MathUtils.clamp(ovni.position.x + (moveovniL + moveovniR)* delta * 25, 30, -30);
+        ovni.position.x += (moveovniL +moveovniR) * delta * ovnispeed;
+        ovni.position.z -= (moveovniL +moveovniR) * delta * ovnispeed;
+    }
+    ovni.rotation.y += ovnispeed * delta;
+
+    spotTarget.position.set(ovni.position.x, ovni.position.y - 3, ovni.position.z);
+}
 ////////////
 /* UPDATE */
 ////////////
@@ -278,6 +345,7 @@ function animate() {
 
     delta = clock.getDelta();
 
+    ovni_movement(delta);
     update(delta);
     // controls.update();
     render();
@@ -315,13 +383,35 @@ function onKeyDown(e) {
     else if (e.key === 'D' || e.key === 'd') {
         toggleDirectionalLight();
     }
+    else if (e.key === 'S' || e.key === 's') {
+        spotLight.visible = !spotLight.visible;
+    }
+    else if (e.key === 'P' || e.key === 'p') {
+        pointLights.forEach(light => light.visible = !light.visible);
+    }
+    else if (e.key == 'ArrowLeft'|| e.key === 'arrowLeft') {
+        ovnimov= true;
+        moveovniL = -1;
+    }
+    else if (e.key == 'ArrowRight' || e.key === 'arrowRight') {
+        ovnimov= true;
+        moveovniR = 1;
+    }
 }
 
 ///////////////////////
 /* KEY UP CALLBACK */
 ///////////////////////
 function onKeyUp(e) {
-    
+    'use strict';
+    if (e.key == 'ArrowLeft'|| e.key === 'arrowLeft') {
+        ovnimov= false;
+        moveovniL = 0;
+    }
+    else if (e.key == 'ArrowRight' || e.key === 'arrowRight') {
+        ovnimov= false;
+        moveovniR = 0;
+    }
 }
 
 function generateFieldTexture() {
