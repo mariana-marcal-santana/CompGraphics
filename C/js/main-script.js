@@ -237,17 +237,17 @@ function createOvni(){
     const bodyGeometry = new THREE.SphereGeometry(3, 32, 16);
     const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x999999 });
     const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
-    body.scale.y = 0.4;
+    body.scale.y = 0.3;
     ovni.add(body);
 
-    const cockpitGeometry = new THREE.SphereGeometry(1.5, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
+    const cockpitGeometry = new THREE.SphereGeometry(2.25, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
     const cockpitMaterial = new THREE.MeshPhongMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 });
     const cockpit = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
     ovni.add(cockpit);
 
     const centerCylinderGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 16);
     const centerCylinder = new THREE.Mesh(centerCylinderGeometry, bodyMaterial);
-    centerCylinder.position.y = -1.2;
+    centerCylinder.position.y = -1;
     ovni.add(centerCylinder);
 
     const radius = 2.2;
@@ -257,8 +257,8 @@ function createOvni(){
         const z = Math.sin(angle) * radius;
 
         const luzGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-        const luz = new THREE.Mesh(luzGeometry, new THREE.MeshBasicMaterial({ color: 0xffff00 }));
-        luz.position.set(x, -1.2, z);
+        const luz = new THREE.Mesh(luzGeometry, new THREE.MeshPhongMaterial({ color: 0xffff00 }));
+        luz.position.set(x, -0.8, z);
         ovni.add(luz);
 
         const pointLight = new THREE.PointLight(0xffffaa, 1, 10);
@@ -267,21 +267,22 @@ function createOvni(){
         pointLights.push(pointLight);
     }
 
-    spotLight = new THREE.SpotLight(0xff0000, 4, 30, Math.PI / 4, 0.2);
-    spotLight.position.set(0, -1, 0);
+    spotLight = new THREE.SpotLight(0xffff00, 3000, 100, Math.PI / 2, 0.5);
+    spotLight.position.set(0, -1.5, 0); 
     spotLight.castShadow = true;
-    ovni.add(spotLight);
 
     spotTarget = new THREE.Object3D();
-    spotTarget.position.set(0, -3, 0);
-    scene.add(spotTarget);
+    spotTarget.position.set(0, -3, 0); 
 
+    scene.add(spotTarget); 
     spotLight.target = spotTarget;
+
     ovni.add(spotLight);
-
+    
     ovni.position.set(0, 35, 0);
+    ovni.scale.set(1.5, 1.5, 1.5);
     scene.add(ovni);
-
+ 
 }
 //////////////////////
 /* CHECK COLLISIONS */
@@ -293,12 +294,11 @@ function checkCollisions() {}
 ///////////////////////
 function handleCollisions() {}
 
-function ovni_movement(delta){
-    console.log("OVNI:", ovnimov);
+function ovni_movement(delta) {
     if(ovnimov){
         //ovni.position.x = THREE.MathUtils.clamp(ovni.position.x + (moveovniL + moveovniR)* delta * 25, 30, -30);
-        ovni.position.x += (moveovniL +moveovniR) * delta * ovnispeed;
-        ovni.position.z -= (moveovniL +moveovniR) * delta * ovnispeed;
+        ovni.position.x += (moveovniL + moveovniR) * delta * ovnispeed;
+        ovni.position.z -= (moveovniL + moveovniR) * delta * ovnispeed;
     }
     ovni.rotation.y += ovnispeed * delta;
 
@@ -307,7 +307,9 @@ function ovni_movement(delta){
 ////////////
 /* UPDATE */
 ////////////
-function update() {}
+function update() {
+    
+}
 
 /////////////
 /* DISPLAY */
@@ -344,7 +346,7 @@ function animate() {
     'use strict';
 
     delta = clock.getDelta();
-
+    
     ovni_movement(delta);
     update(delta);
     // controls.update();
