@@ -120,23 +120,25 @@ function createMoon() {
 function createTrees() {
     'use strict';
     
-    createTree(10, 5, 10, 10, 0);
-    createTree(15, 15, 20, 10, -10);
-    createTree(7.5, 5, -10, 10, 0);
-    createTree(12, 5, -25, 10, 10);
-    createTree(15, 5, 20, 7.5, -60);
-    createTree(15, 5, 40, 7.5, -60);
+    createTree(10, -5, 10, 7.5, 0);
+    createTree(15, 15, 20, 7.5, -10);
+    createTree(7.5, 5, 10, 7.5, 20);
+    createTree(12, 10, -35, 7.5, 20);
+    createTree(15, 5, 40, 7.5, 60);
+    createTree(10, 5, -40, 7.5, -60);
 }
 
 function createTree(height, rotation, x, y, z) {
     'use strict';
     
-    const trunkMaterial = new THREE.MeshPhongMaterial({ color: 0x8B4513 });
+    const treeGroup = new THREE.Group();
+
+    const trunkMaterial = new THREE.MeshPhongMaterial({ color: 0xD2691E });
 
     const mainTrunkGeometry = new THREE.CylinderGeometry(1, 1, height, 8);
     const mainTrunkMesh = new THREE.Mesh(mainTrunkGeometry, trunkMaterial);
     mainTrunkMesh.position.set(x, y + height / 2, z);
-    mainTrunkMesh.rotation.z = 0.2;
+    mainTrunkMesh.rotation.x = 0.15;
 
     const secondaryTrunkGeometry = new THREE.CylinderGeometry(0.75, 0.75, 0.5 * height, 8);
     const secondaryTrunkMesh = new THREE.Mesh(secondaryTrunkGeometry, trunkMaterial);
@@ -149,18 +151,22 @@ function createTree(height, rotation, x, y, z) {
     const mainLeavesGeometry = new THREE.SphereGeometry(0.5 * height, 8, 8);
     const mainLeavesMesh = new THREE.Mesh(mainLeavesGeometry, leavesMaterial);
     mainLeavesGeometry.scale(1, 0.5, 1);
-    mainLeavesMesh.position.set(x-1, y + height, z);
+    mainLeavesMesh.position.set(x, y + height, z);
 
     const secondaryLeavesGeometry = new THREE.SphereGeometry(0.25 * height, 8, 8);
     const secondaryLeavesMesh = new THREE.Mesh(secondaryLeavesGeometry, leavesMaterial);
     secondaryLeavesGeometry.scale(1, 0.5, 1);
-    secondaryLeavesMesh.position.set(x+1, y + 0.65 * height, z - 0.5 * height);
+    secondaryLeavesMesh.position.set(x, y + 0.65 * height, z - 0.5 * height);
     secondaryLeavesMesh.rotation.y = rotation;
 
-    scene.add(mainTrunkMesh);
-    scene.add(secondaryTrunkMesh);
-    scene.add(mainLeavesMesh);
-    scene.add(secondaryLeavesMesh);
+    treeGroup.add(mainTrunkMesh);
+    treeGroup.add(secondaryTrunkMesh);
+    treeGroup.add(mainLeavesMesh);
+    treeGroup.add(secondaryLeavesMesh);
+
+    treeGroup.rotation.y = rotation;
+
+    scene.add(treeGroup);
 }
 
 function createHouse(x, y, z) {
