@@ -161,70 +161,79 @@ function createHouse(x, y, z) {
     const houseGroup = new THREE.Group();
 
     const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xf0f0f0, side: THREE.DoubleSide });
-    // const borderMaterial = new THREE.MeshPhongMaterial({ color: 0x1a66ff, side: THREE.DoubleSide });
     const roofMaterial = new THREE.MeshPhongMaterial({ color: 0xff6600, side: THREE.DoubleSide });
     const doorWindowMaterial = new THREE.MeshPhongMaterial({ color: 0x3399ff, side: THREE.DoubleSide });
 
     // Corpo da casa
-    const bodyGeometry = new THREE.BoxGeometry(18, 8, 6);
-    const bodyMesh = new THREE.Mesh(bodyGeometry, wallMaterial);
-    bodyMesh.position.set(0, 4, 0);  
-    houseGroup.add(bodyMesh);
-
-    // // Bordado 
-    // const borderGeometry = new THREE.BoxGeometry(18, 2, 6);
-    // const borderMesh = new THREE.Mesh(borderGeometry, borderMaterial);
-    // borderMesh.position.set(0, 0.5, 0);
-    // houseGroup.add(borderMesh);
+    const wallGeometry = new THREE.BufferGeometry();
+    const wallVertices = new Float32Array([
+        // Frente
+        -9, 0, 3,   9, 0, 3,   9, 8, 3,
+        -9, 0, 3,   9, 8, 3,  -9, 8, 3,
+        // Direita
+        9, 0, -3,   9, 0, 3,   9, 8, 3,
+        9, 0, -3,   9, 8, 3,   9, 8, -3,
+       
+    ]);
+    wallGeometry.setAttribute('position', new THREE.BufferAttribute(wallVertices, 3));
+    wallGeometry.computeVertexNormals();
+    const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
+    houseGroup.add(wallMesh);
 
     // Telhado
-    const roofHeight = 4;
-    const roofShape = new THREE.Shape();
-    roofShape.moveTo(-9, 0);  
-    roofShape.lineTo(0, roofHeight);
-    roofShape.lineTo(9, 0);
-    roofShape.lineTo(-9, 0);
-
-    const extrudeSettings = { depth: 6, bevelEnabled: false };
-    const roofGeometry = new THREE.ExtrudeGeometry(roofShape, extrudeSettings);
+    const roofGeometry = new THREE.BufferGeometry();
+    const roofVertices = new Float32Array([
+        // Frente
+        -9, 8, 3,   9, 8, 3,   0, 12, 3,
+       
+        // Direita
+         9, 8, -3,   9, 8, 3,   0, 12, 3,
+         9, 8, -3,   0, 12, 3,   0, 12, -3,
+    ]);
+    roofGeometry.setAttribute('position', new THREE.BufferAttribute(roofVertices, 3));
+    roofGeometry.computeVertexNormals();
     const roofMesh = new THREE.Mesh(roofGeometry, roofMaterial);
-    roofMesh.position.set(0, 8, -3); 
     houseGroup.add(roofMesh);
 
-    // Porta 
-    const doorGeometry = new THREE.PlaneGeometry(3, 4);
+    // Porta
+    const doorGeometry = new THREE.BufferGeometry();
+    const doorVertices = new Float32Array([
+        -1.5, 0, 3.01,  1.5, 0, 3.01,  1.5, 4, 3.01,
+        -1.5, 0, 3.01,  1.5, 4, 3.01, -1.5, 4, 3.01,
+    ]);
+    doorGeometry.setAttribute('position', new THREE.BufferAttribute(doorVertices, 3));
+    doorGeometry.computeVertexNormals();
     const doorMesh = new THREE.Mesh(doorGeometry, doorWindowMaterial);
-    doorMesh.position.set(0, 2, 3.01);
     houseGroup.add(doorMesh);
 
-    // Janelas 
-    const windowGeometry = new THREE.PlaneGeometry(2, 2);
+    // Janelas de frente
+    const createWindow = (xPos) => {
+        const winGeo = new THREE.BufferGeometry();
+        const verts = new Float32Array([
+            xPos - 1, 4, 3.01,  xPos + 1, 4, 3.01,  xPos + 1, 6, 3.01,
+            xPos - 1, 4, 3.01,  xPos + 1, 6, 3.01,  xPos - 1, 6, 3.01,
+        ]);
+        winGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
+        winGeo.computeVertexNormals();
+        return new THREE.Mesh(winGeo, doorWindowMaterial);
+    };
 
-    const windowMeshFarLeft = new THREE.Mesh(windowGeometry, doorWindowMaterial);
-    windowMeshFarLeft.position.set(-7, 5, 3.01);  
-    houseGroup.add(windowMeshFarLeft);
+    const positions = [-7, -3.5, 3.5, 7];
+    positions.forEach(pos => houseGroup.add(createWindow(pos)));
 
-    const windowMeshLeft = new THREE.Mesh(windowGeometry, doorWindowMaterial);
-    windowMeshLeft.position.set(-3.5, 5, 3.01);
-    houseGroup.add(windowMeshLeft);
-
-    const windowMeshRight = new THREE.Mesh(windowGeometry, doorWindowMaterial);
-    windowMeshRight.position.set(3.5, 5, 3.01);
-    houseGroup.add(windowMeshRight);
-
-    const windowMeshFarRight = new THREE.Mesh(windowGeometry, doorWindowMaterial);
-    windowMeshFarRight.position.set(7, 5, 3.01);
-    houseGroup.add(windowMeshFarRight);
-
-
-    const sideWindow1 = new THREE.Mesh(windowGeometry, doorWindowMaterial);
-    sideWindow1.position.set(9.01, 5, 0); 
-    sideWindow1.rotation.y = -Math.PI / 2;
-    houseGroup.add(sideWindow1);
-
+    // Janela lateral
+    const sideWindowGeo = new THREE.BufferGeometry();
+    const sw = new Float32Array([
+        9.01, 4, -1,  9.01, 4, 1,  9.01, 6, 1,
+        9.01, 4, -1,  9.01, 6, 1,  9.01, 6, -1,
+    ]);
+    sideWindowGeo.setAttribute('position', new THREE.BufferAttribute(sw, 3));
+    sideWindowGeo.computeVertexNormals();
+    const sideWindowMesh = new THREE.Mesh(sideWindowGeo, doorWindowMaterial);
+    houseGroup.add(sideWindowMesh);
 
     houseGroup.position.set(x, y, z);
-    houseGroup.rotation.y = Math.PI /8;
+    houseGroup.rotation.y = Math.PI / 8;
 
     scene.add(houseGroup);
 }
