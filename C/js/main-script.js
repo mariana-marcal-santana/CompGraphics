@@ -3,12 +3,12 @@ import * as THREE from "three";
 //////////////////////
 /* GLOBAL VARIABLES */
 //////////////////////
-var cameras = [];
 let scene, camera, renderer;
 var terrain, skydome, geometry, mesh;
 let ovni, pointLights = [], spotLight, spotTarget;
 const clock = new THREE.Clock();
 var delta;
+let moonMesh;
 var ovnimov = false, moveovniR = 0,moveovniL = 0, ovnispeed = 10, numLights = 6;
 var isDirectionalLightOn = false, directionalLight;
 const radius = 150;
@@ -28,7 +28,7 @@ function createScene() {
     createTerrain();
     createMoon();
     createTrees();
-    createHouse(0,10,40);
+    createHouse(-50,15,20);
     createOvni();
 }
 
@@ -37,27 +37,14 @@ function createScene() {
 //////////////////////
 function createCameras() {
     'use strict';
-    const positions = new Array(new Array(0, 0, 0), // lateral (criação de texturas)
-                                new Array(50, 25, 50)); // perspetiva isométrica - projeção ortogonal (cena principal); 
-
-    for (let i = 0; i < 2; i++) {
-        if (i == 1) {
-            camera = new THREE.PerspectiveCamera(70, window.innerWidth / window.innerHeight, 1, 1000);
-        } else {
-            camera = new THREE.OrthographicCamera(window.innerWidth / -50,
-                                            window.innerWidth / 50,
-                                            window.innerHeight / 50,
-                                            window.innerHeight / -50,
-                                            1,
-                                            1000);
-        }
-
-        camera.position.set(positions[i][0], positions[i][1], positions[i][2]);
-        camera.lookAt(scene.position);
-        cameras.push(camera);
-    }
-    camera = cameras[1];
- 
+    camera = new THREE.PerspectiveCamera(
+        70,
+        window.innerWidth / window.innerHeight,
+        1,
+        2000
+    );
+    camera.position.set(0, 25, 80);  // moved above and back
+    camera.lookAt(0, 0, 0);            // looking at the center
 }
 
 /////////////////////
@@ -65,15 +52,16 @@ function createCameras() {
 /////////////////////
 function toggleDirectionalLight() {
     'use strict';
-
     if (isDirectionalLightOn) {
         scene.remove(directionalLight);
+        moonMesh.material.emissive.setHex(0x000000);
     } 
     else {
         directionalLight = new THREE.DirectionalLight(0xffffff, 4);
-        directionalLight.position.set(2, 2, 4); 
+        directionalLight.position.copy(moonMesh.position);
         directionalLight.castShadow = true;
         scene.add(directionalLight);
+        moonMesh.material.emissive.setHex(0xffffff);
     }
     isDirectionalLightOn = !isDirectionalLightOn;
 }
@@ -85,12 +73,13 @@ function createTerrain() {
     'use strict';
 
     terrain = new THREE.Object3D();
-    const geometry = new THREE.CircleGeometry(radius, 32);
-    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, bumpMap: texture, bumpScale: -10, 
-        displacementMap: texture, displacementScale: 10}));
+   const geometry = new THREE.PlaneGeometry(radius * 2, radius * 2, 256, 256);
+
+    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, bumpMap: texture, bumpScale: 10, 
+        displacementMap: texture, displacementScale: 30}));
 
     terrain.add(mesh);
-    terrain.rotation.x = 3 * Math.PI / 2; 
+    terrain.rotation.x = - Math.PI / 2; 
     scene.add(terrain);
 }
 
@@ -99,7 +88,7 @@ function createSkydome() {
 
     skydome = new THREE.Object3D();
     geometry = new THREE.SphereGeometry(radius, 32, 16, 0, 2 * Math.PI, 0, 0.5 * Math.PI);
-    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ side: THREE.DoubleSide }));
+    mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
 
     skydome.add(mesh);
     scene.add(skydome);
@@ -108,24 +97,21 @@ function createSkydome() {
 function createMoon() {
     'use strict';
 
-    const moonGeometry = new THREE.SphereGeometry(1.5, 16, 16);
-    const moonMaterial = new THREE.MeshPhongMaterial({ color: 0x888888, emissive: 0xffffff,
-        emissiveIntensity: 0.6, side: THREE.DoubleSide });
-    const moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
+    const moonGeometry = new THREE.SphereGeometry(4, 64, 64);
+    const moonMaterial = new THREE.MeshPhongMaterial({ color: 0x888888, emissive: 0x000000 });
+    moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
 
-    moonMesh.position.set(40, 35, -30);
+    moonMesh.position.set(50, 45, 0);
     scene.add(moonMesh);
 }
 
 function createTrees() {
     'use strict';
-    
-    createTree(10, -5, 10, 7.5, 0);
-    createTree(15, 15, 20, 7.5, -10);
-    createTree(7.5, 5, 10, 7.5, 20);
-    createTree(12, 10, -35, 7.5, 20);
-    createTree(15, 5, 40, 7.5, 60);
-    createTree(10, 5, -40, 7.5, -60);
+
+    createTree(10, 5, 25, 15, 5);
+    createTree(7.5, 10, 10, 15, 10);
+    createTree(12.5, 5, 0, 12.5, 30);
+    createTree(10, 5, 25, 20, -20);
 }
 
 function createTree(height, rotation, x, y, z) {
@@ -230,8 +216,15 @@ function createHouse(x, y, z) {
     windowMeshFarRight.position.set(7, 5, 3.01);
     houseGroup.add(windowMeshFarRight);
 
+
+    const sideWindow1 = new THREE.Mesh(windowGeometry, doorWindowMaterial);
+    sideWindow1.position.set(9.01, 5, 0); 
+    sideWindow1.rotation.y = -Math.PI / 2;
+    houseGroup.add(sideWindow1);
+
+
     houseGroup.position.set(x, y, z);
-    houseGroup.rotation.y = Math.PI / 4;
+    houseGroup.rotation.y = Math.PI /8;
 
     scene.add(houseGroup);
 }
@@ -269,6 +262,7 @@ function createOvni(){
 
         const pointLight = new THREE.PointLight(0xffffaa, 1, 10);
         pointLight.position.copy(luz.position);
+        pointLight.castShadow = false;
         ovni.add(pointLight);
         pointLights.push(pointLight);
     }
@@ -285,7 +279,7 @@ function createOvni(){
 
     ovni.add(spotLight);
     
-    ovni.position.set(0, 35, 0);
+    ovni.position.set(0, 35, 20);
     ovni.scale.set(1.5, 1.5, 1.5);
     scene.add(ovni);
  
@@ -302,9 +296,7 @@ function handleCollisions() {}
 
 function ovni_movement(delta) {
     if(ovnimov){
-        //ovni.position.x = THREE.MathUtils.clamp(ovni.position.x + (moveovniL + moveovniR)* delta * 25, 30, -30);
         ovni.position.x += (moveovniL + moveovniR) * delta * ovnispeed;
-        ovni.position.z -= (moveovniL + moveovniR) * delta * ovnispeed;
     }
     ovni.rotation.y += ovnispeed * delta;
 
@@ -426,8 +418,8 @@ function generateFieldTexture() {
     'use strict';
 
     const canvas = document.createElement('canvas');
-    canvas.width = 1024;
-    canvas.height = 1024;
+    canvas.width = 2048;
+    canvas.height = 2048;
 
     const ctx = canvas.getContext('2d');
     ctx.fillStyle = '#82D173';
@@ -437,7 +429,7 @@ function generateFieldTexture() {
     for (let i = 0; i < 3000; i++) {
         const x = Math.random() * canvas.width;
         const y = Math.random() * canvas.height;
-        const radius = Math.random();
+        const radius = 1 + Math.random() * 2; 
         ctx.beginPath();
         ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
         ctx.arc(x, y, radius, 0, Math.PI * 2);
@@ -453,7 +445,7 @@ function generateSkyTexture() {
     canvas.height = 1024;
     const ctx = canvas.getContext('2d');
 
-    const gradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    const gradient = ctx.createLinearGradient(0, canvas.height * 0.75, 0, canvas.height);
     gradient.addColorStop(0, '#030357');
     gradient.addColorStop(1, '#330033');
     ctx.fillStyle = gradient;
