@@ -4,13 +4,13 @@ import * as THREE from "three";
 /* GLOBAL VARIABLES */
 //////////////////////
 let scene, camera, renderer;
-var terrain, skydome, geometry, mesh;
-let ovni, pointLights = [], spotLight, spotTarget;
+let terrain, skydome, geometry, shadowing;
+let moonMesh, treeGroup, houseGroup, ovni;
+let pointLights = [], spotLight, spotTarget;
 const clock = new THREE.Clock();
-var delta;
-let moonMesh;
-var ovnimov = false, moveovniR = 0,moveovniL = 0, ovnispeed = 10, numLights = 6;
-var isDirectionalLightOn = false, directionalLight;
+let delta;
+let ovnimov = false, moveovniR = 0,moveovniL = 0, ovnispeed = 10, numLights = 6;
+let isDirectionalLightOn = false, directionalLight;
 const radius = 150;
 const loader = new THREE.TextureLoader();
 const texture = loader.load('js/heightmap/heightmap1.png');
@@ -43,8 +43,8 @@ function createCameras() {
         1,
         2000
     );
-    camera.position.set(0, 25, 80);  // moved above and back
-    camera.lookAt(0, 0, 0);            // looking at the center
+    camera.position.set(0, 25, 80);  
+    camera.lookAt(0, 0, 0);    
 }
 
 /////////////////////
@@ -73,12 +73,12 @@ function createTerrain() {
     'use strict';
 
     terrain = new THREE.Object3D();
-   const geometry = new THREE.PlaneGeometry(radius * 2, radius * 2, 256, 256);
+    const geometry = new THREE.PlaneGeometry(radius * 2, radius * 2, 256, 256);
 
-    mesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, bumpMap: texture, bumpScale: 10, 
+    const terrainMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, bumpMap: texture, bumpScale: 10, 
         displacementMap: texture, displacementScale: 30}));
 
-    terrain.add(mesh);
+    terrain.add(terrainMesh);
     terrain.rotation.x = - Math.PI / 2; 
     scene.add(terrain);
 }
@@ -88,9 +88,9 @@ function createSkydome() {
 
     skydome = new THREE.Object3D();
     geometry = new THREE.SphereGeometry(radius, 32, 16, 0, 2 * Math.PI, 0, 0.5 * Math.PI);
-    mesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
+    const skydomeMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
 
-    skydome.add(mesh);
+    skydome.add(skydomeMesh);
     scene.add(skydome);
 }
 
@@ -117,7 +117,7 @@ function createTrees() {
 function createTree(height, rotation, x, y, z) {
     'use strict';
     
-    const treeGroup = new THREE.Group();
+    treeGroup = new THREE.Group();
 
     const trunkMaterial = new THREE.MeshPhongMaterial({ color: 0xD2691E });
 
@@ -158,7 +158,7 @@ function createTree(height, rotation, x, y, z) {
 function createHouse(x, y, z) {
     'use strict';
 
-    const houseGroup = new THREE.Group();
+    houseGroup = new THREE.Group();
 
     const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xf0f0f0, side: THREE.DoubleSide });
     const roofMaterial = new THREE.MeshPhongMaterial({ color: 0xff6600, side: THREE.DoubleSide });
@@ -293,15 +293,24 @@ function createOvni(){
     scene.add(ovni);
  
 }
-//////////////////////
-/* CHECK COLLISIONS */
-//////////////////////
-function checkCollisions() {}
 
-///////////////////////
-/* HANDLE COLLISIONS */
-///////////////////////
-function handleCollisions() {}
+function switchToGouraudShading() {
+    if (shadowing == 'Gouraud') 
+        return;
+    shadowing = 'Gouraud';
+    moonMesh.material = new THREE.MeshLambertMaterial({ color: 0x888888, emissive: 0x000000 });
+    treeGroup.mainTrunkMesh.material = new THREE.MeshLambertMaterial({ color: 0xD2691E });
+    treeGroup.secondaryTrunkMesh.material = new THREE.MeshLambertMaterial({ color: 0xD2691E });
+    treeGroup.mainLeavesMesh.material = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+    treeGroup.secondaryLeavesMesh.material = new THREE.MeshLambertMaterial({ color: 0x228B22 });
+    houseGroup.wallMesh.material = new THREE.MeshLambertMaterial({ color: 0xf0f0f0, side: THREE.DoubleSide });
+    houseGroup.roofMesh.material = new THREE.MeshLambertMaterial({ color: 0xff6600, side: THREE.DoubleSide });
+    houseGroup.doorMesh.material = new THREE.MeshLambertMaterial({ color: 0x3399ff, side: THREE.DoubleSide });
+    houseGroup.sideWindowMesh.material = new THREE.MeshLambertMaterial({ color: 0x3399ff, side: THREE.DoubleSide });
+    // ovni
+
+    
+}
 
 function ovni_movement(delta) {
     if(ovnimov){
@@ -405,6 +414,15 @@ function onKeyDown(e) {
     else if (e.key == 'ArrowRight' || e.key === 'arrowRight') {
         ovnimov= true;
         moveovniR = 1;
+    }
+    else if (e.key == 'Q' || e.key == 'q') {
+        switchToGouraudShading();
+    }
+    else if (e.key == 'W' || e.key == 'w') {
+        
+    }
+    else if (e.key == 'E' || e.key == 'e') {
+        
     }
 }
 
