@@ -4,26 +4,101 @@ import * as THREE from "three";
 /* GLOBAL VARIABLES */
 //////////////////////
 let scene, camera, renderer;
-let terrain, skydome, geometry, shadowing;
+let terrain, skydome, shadowing;
 let moonMesh, treeGroup, houseGroup, ovni;
 let pointLights = [], spotLight, spotTarget;
-const clock = new THREE.Clock();
 let delta;
-let ovnimov = false, moveovniR = 0,moveovniL = 0, ovnispeed = 10, numLights = 6;
+let ovnimov = false, moveovniR = 0,moveovniL = 0, numLights = 6;
 let isDirectionalLightOn = false, directionalLight;
+
+const materials = {terrain: {}, skydome: {}, moon: {}, house: {}, trees: {}, ovni: {}, };
+const clock = new THREE.Clock();
 const radius = 150;
 const loader = new THREE.TextureLoader();
 const texture = loader.load('js/heightmap/heightmap1.png');
+
+/////////////////////
+/* CREATE MATERIALS */
+/////////////////////
+function createMaterials() {
+    'use strict';
+
+    const commonProps = { side: THREE.DoubleSide };
+
+    materials.moon = {
+        lambert: new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0x000000 }),
+        basic:   new THREE.MeshBasicMaterial({ color: 0xffffff }),
+        phong:   new THREE.MeshPhongMaterial({ color: 0xffffff, emissive: 0x000000 }),
+        toon:    new THREE.MeshToonMaterial({ color: 0xffffff, emissive: 0x000000}),
+    };
+
+    materials.house = {
+        wall: {
+            lambert: new THREE.MeshLambertMaterial({ color: 0xf0f0f0, ...commonProps }),
+            basic:   new THREE.MeshBasicMaterial({ color: 0xf0f0f0, ...commonProps }),
+            phong:   new THREE.MeshPhongMaterial({ color: 0xf0f0f0, ...commonProps }),
+            toon:    new THREE.MeshToonMaterial({ color: 0xf0f0f0, ...commonProps }),
+        },
+        roof: {
+            lambert: new THREE.MeshLambertMaterial({ color: 0xff6600, ...commonProps }),
+            basic:   new THREE.MeshBasicMaterial({ color: 0xff6600, ...commonProps }),
+            phong:   new THREE.MeshPhongMaterial({ color: 0xff6600, ...commonProps }),
+            toon:    new THREE.MeshToonMaterial({ color: 0xff6600, ...commonProps }),
+        },
+        doorWindow: {
+            lambert: new THREE.MeshLambertMaterial({ color: 0x3399ff, ...commonProps }),
+            basic:   new THREE.MeshBasicMaterial({ color: 0x3399ff, ...commonProps }),
+            phong:   new THREE.MeshPhongMaterial({ color: 0x3399ff, ...commonProps }),
+            toon:    new THREE.MeshToonMaterial({ color: 0x3399ff, ...commonProps }),
+        }
+    };
+
+    materials.trees = {
+        trunk: {
+            lambert: new THREE.MeshLambertMaterial({ color: 0xD2691E }),
+            basic:   new THREE.MeshBasicMaterial({ color: 0xD2691E }),
+            phong:   new THREE.MeshPhongMaterial({ color: 0xD2691E }),
+            toon:    new THREE.MeshToonMaterial({ color: 0xD2691E }),
+        },
+        leaves: {
+            lambert: new THREE.MeshLambertMaterial({ color: 0x228B22 }),
+            basic:   new THREE.MeshBasicMaterial({ color: 0x228B22 }),
+            phong:   new THREE.MeshPhongMaterial({ color: 0x228B22 }),
+            toon:    new THREE.MeshToonMaterial({ color: 0x228B22 }),
+        }
+    };
+
+    materials.ovni = {
+        body: {
+            lambert: new THREE.MeshLambertMaterial({ color: 0x999999 }),
+            basic:   new THREE.MeshBasicMaterial({ color: 0x999999 }),
+            phong:   new THREE.MeshPhongMaterial({ color: 0x999999 }),
+            toon:    new THREE.MeshToonMaterial({ color: 0x999999 }),
+        },
+        cockpit: {
+            lambert: new THREE.MeshLambertMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 }),
+            basic:   new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 }),
+            phong:   new THREE.MeshPhongMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 }),
+            toon:    new THREE.MeshToonMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 }),
+        },
+        lights: {
+            lambert: new THREE.MeshLambertMaterial({ color: 0xffff00 }),
+            basic:   new THREE.MeshBasicMaterial({ color: 0xffff00 }),
+            phong:   new THREE.MeshPhongMaterial({ color: 0xffff00 }),
+            toon:    new THREE.MeshToonMaterial({ color: 0xffff00 }),
+        }
+    };
+}
 
 /////////////////////
 /* CREATE SCENE(S) */
 /////////////////////
 function createScene() {
     'use strict';
+
     scene = new THREE.Scene();
     scene.background = new THREE.Color('#ffffff'); 
 
-    //createLights();
     createSkydome();
     createTerrain();
     createMoon();
@@ -74,7 +149,7 @@ function createTerrain() {
 
     terrain = new THREE.Object3D();
     const geometry = new THREE.PlaneGeometry(radius * 2, radius * 2, 256, 256);
-
+    
     const terrainMesh = new THREE.Mesh(geometry, new THREE.MeshPhongMaterial({ side: THREE.DoubleSide, bumpMap: texture, bumpScale: 10, 
         displacementMap: texture, displacementScale: 30}));
 
@@ -87,7 +162,7 @@ function createSkydome() {
     'use strict';
 
     skydome = new THREE.Object3D();
-    geometry = new THREE.SphereGeometry(radius, 32, 16, 0, 2 * Math.PI, 0, 0.5 * Math.PI);
+    const geometry = new THREE.SphereGeometry(radius, 32, 16, 0, 2 * Math.PI, 0, 0.5 * Math.PI);
     const skydomeMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }));
 
     skydome.add(skydomeMesh);
@@ -98,8 +173,7 @@ function createMoon() {
     'use strict';
 
     const moonGeometry = new THREE.SphereGeometry(4, 64, 64);
-    const moonMaterial = new THREE.MeshPhongMaterial({ color: 0x888888, emissive: 0x000000 });
-    moonMesh = new THREE.Mesh(moonGeometry, moonMaterial);
+    moonMesh = new THREE.Mesh(moonGeometry, materials.moon.lambert);
 
     moonMesh.position.set(50, 45, 0);
     scene.add(moonMesh);
@@ -119,28 +193,25 @@ function createTree(height, rotation, x, y, z) {
     
     treeGroup = new THREE.Group();
 
-    const trunkMaterial = new THREE.MeshPhongMaterial({ color: 0xD2691E });
-
     const mainTrunkGeometry = new THREE.CylinderGeometry(1, 1, height, 8);
-    const mainTrunkMesh = new THREE.Mesh(mainTrunkGeometry, trunkMaterial);
+    const mainTrunkMesh = new THREE.Mesh(mainTrunkGeometry, materials.trees.trunk.lambert);
     mainTrunkMesh.position.set(x, y + height / 2, z);
     mainTrunkMesh.rotation.x = 0.15;
 
     const secondaryTrunkGeometry = new THREE.CylinderGeometry(0.75, 0.75, 0.5 * height, 8);
-    const secondaryTrunkMesh = new THREE.Mesh(secondaryTrunkGeometry, trunkMaterial);
+    const secondaryTrunkMesh = new THREE.Mesh(secondaryTrunkGeometry, materials.trees.trunk.lambert);
     secondaryTrunkMesh.position.set(x, y + height / 2, z - 0.25 * height);
     secondaryTrunkMesh.rotation.y = rotation;
     secondaryTrunkMesh.rotation.x = 5;
 
-    const leavesMaterial = new THREE.MeshPhongMaterial({ color: 0x228B22 });
-
+    
     const mainLeavesGeometry = new THREE.SphereGeometry(0.5 * height, 8, 8);
-    const mainLeavesMesh = new THREE.Mesh(mainLeavesGeometry, leavesMaterial);
+    const mainLeavesMesh = new THREE.Mesh(mainLeavesGeometry, materials.trees.leaves.lambert);
     mainLeavesGeometry.scale(1, 0.5, 1);
     mainLeavesMesh.position.set(x, y + height, z);
 
     const secondaryLeavesGeometry = new THREE.SphereGeometry(0.25 * height, 8, 8);
-    const secondaryLeavesMesh = new THREE.Mesh(secondaryLeavesGeometry, leavesMaterial);
+    const secondaryLeavesMesh = new THREE.Mesh(secondaryLeavesGeometry, materials.trees.leaves.lambert);
     secondaryLeavesGeometry.scale(1, 0.5, 1);
     secondaryLeavesMesh.position.set(x, y + 0.65 * height, z - 0.5 * height);
     secondaryLeavesMesh.rotation.y = rotation;
@@ -160,10 +231,6 @@ function createHouse(x, y, z) {
 
     houseGroup = new THREE.Group();
 
-    const wallMaterial = new THREE.MeshPhongMaterial({ color: 0xf0f0f0, side: THREE.DoubleSide });
-    const roofMaterial = new THREE.MeshPhongMaterial({ color: 0xff6600, side: THREE.DoubleSide });
-    const doorWindowMaterial = new THREE.MeshPhongMaterial({ color: 0x3399ff, side: THREE.DoubleSide });
-
     // Corpo da casa
     const wallGeometry = new THREE.BufferGeometry();
     const wallVertices = new Float32Array([
@@ -173,11 +240,11 @@ function createHouse(x, y, z) {
         // Direita
         9, 0, -3,   9, 0, 3,   9, 8, 3,
         9, 0, -3,   9, 8, 3,   9, 8, -3,
-       
     ]);
     wallGeometry.setAttribute('position', new THREE.BufferAttribute(wallVertices, 3));
     wallGeometry.computeVertexNormals();
-    const wallMesh = new THREE.Mesh(wallGeometry, wallMaterial);
+    const wallMesh = new THREE.Mesh(wallGeometry, materials.house.wall.lambert);
+    wallMesh.name = "wall";
     houseGroup.add(wallMesh);
 
     // Telhado
@@ -185,14 +252,14 @@ function createHouse(x, y, z) {
     const roofVertices = new Float32Array([
         // Frente
         -9, 8, 3,   9, 8, 3,   0, 12, 3,
-       
         // Direita
          9, 8, -3,   9, 8, 3,   0, 12, 3,
          9, 8, -3,   0, 12, 3,   0, 12, -3,
     ]);
     roofGeometry.setAttribute('position', new THREE.BufferAttribute(roofVertices, 3));
     roofGeometry.computeVertexNormals();
-    const roofMesh = new THREE.Mesh(roofGeometry, roofMaterial);
+    const roofMesh = new THREE.Mesh(roofGeometry, materials.house.roof.lambert);
+    roofMesh.name = "roof";
     houseGroup.add(roofMesh);
 
     // Porta
@@ -203,11 +270,12 @@ function createHouse(x, y, z) {
     ]);
     doorGeometry.setAttribute('position', new THREE.BufferAttribute(doorVertices, 3));
     doorGeometry.computeVertexNormals();
-    const doorMesh = new THREE.Mesh(doorGeometry, doorWindowMaterial);
+    const doorMesh = new THREE.Mesh(doorGeometry, materials.house.doorWindow.lambert);
+    doorMesh.name = "door";
     houseGroup.add(doorMesh);
 
-    // Janelas de frente
-    const createWindow = (xPos) => {
+    // Janelas Frontais
+    const createWindow = (xPos, i) => {
         const winGeo = new THREE.BufferGeometry();
         const verts = new Float32Array([
             xPos - 1, 4, 3.01,  xPos + 1, 4, 3.01,  xPos + 1, 6, 3.01,
@@ -215,13 +283,17 @@ function createHouse(x, y, z) {
         ]);
         winGeo.setAttribute('position', new THREE.BufferAttribute(verts, 3));
         winGeo.computeVertexNormals();
-        return new THREE.Mesh(winGeo, doorWindowMaterial);
+        const mesh = new THREE.Mesh(winGeo, materials.house.doorWindow.lambert);
+        mesh.name = `window-front-${i}`;
+        return mesh;
     };
 
     const positions = [-7, -3.5, 3.5, 7];
-    positions.forEach(pos => houseGroup.add(createWindow(pos)));
+    positions.forEach((pos, i) => {
+        houseGroup.add(createWindow(pos, i));
+    });
 
-    // Janela lateral
+    // Janela Lateral
     const sideWindowGeo = new THREE.BufferGeometry();
     const sw = new Float32Array([
         9.01, 4, -1,  9.01, 4, 1,  9.01, 6, 1,
@@ -229,12 +301,12 @@ function createHouse(x, y, z) {
     ]);
     sideWindowGeo.setAttribute('position', new THREE.BufferAttribute(sw, 3));
     sideWindowGeo.computeVertexNormals();
-    const sideWindowMesh = new THREE.Mesh(sideWindowGeo, doorWindowMaterial);
+    const sideWindowMesh = new THREE.Mesh(sideWindowGeo, materials.house.doorWindow.lambert);
+    sideWindowMesh.name = "window-side";
     houseGroup.add(sideWindowMesh);
 
     houseGroup.position.set(x, y, z);
     houseGroup.rotation.y = Math.PI / 8;
-
     scene.add(houseGroup);
 }
 
@@ -243,18 +315,16 @@ function createOvni(){
     ovni =  new THREE.Group();
 
     const bodyGeometry = new THREE.SphereGeometry(3, 32, 16);
-    const bodyMaterial = new THREE.MeshPhongMaterial({ color: 0x999999 });
-    const body = new THREE.Mesh(bodyGeometry, bodyMaterial);
+    const body = new THREE.Mesh(bodyGeometry, materials.ovni.body.lambert);
     body.scale.y = 0.3;
     ovni.add(body);
 
     const cockpitGeometry = new THREE.SphereGeometry(2.25, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2);
-    const cockpitMaterial = new THREE.MeshPhongMaterial({ color: 0x00ffff, transparent: true, opacity: 0.6 });
-    const cockpit = new THREE.Mesh(cockpitGeometry, cockpitMaterial);
+    const cockpit = new THREE.Mesh(cockpitGeometry,  materials.ovni.cockpit.lambert);
     ovni.add(cockpit);
 
     const centerCylinderGeometry = new THREE.CylinderGeometry(0.5, 0.5, 0.2, 16);
-    const centerCylinder = new THREE.Mesh(centerCylinderGeometry, bodyMaterial);
+    const centerCylinder = new THREE.Mesh(centerCylinderGeometry, materials.ovni.body.lambert);
     centerCylinder.position.y = -1;
     ovni.add(centerCylinder);
 
@@ -265,7 +335,7 @@ function createOvni(){
         const z = Math.sin(angle) * radius;
 
         const luzGeometry = new THREE.SphereGeometry(0.2, 8, 8);
-        const luz = new THREE.Mesh(luzGeometry, new THREE.MeshPhongMaterial({ color: 0xffff00 }));
+        const luz = new THREE.Mesh(luzGeometry, materials.ovni.lights.lambert);
         luz.position.set(x, -0.8, z);
         ovni.add(luz);
 
@@ -298,25 +368,113 @@ function switchToGouraudShading() {
     if (shadowing == 'Gouraud') 
         return;
     shadowing = 'Gouraud';
-    moonMesh.material = new THREE.MeshLambertMaterial({ color: 0x888888, emissive: 0x000000 });
-    treeGroup.mainTrunkMesh.material = new THREE.MeshLambertMaterial({ color: 0xD2691E });
-    treeGroup.secondaryTrunkMesh.material = new THREE.MeshLambertMaterial({ color: 0xD2691E });
-    treeGroup.mainLeavesMesh.material = new THREE.MeshLambertMaterial({ color: 0x228B22 });
-    treeGroup.secondaryLeavesMesh.material = new THREE.MeshLambertMaterial({ color: 0x228B22 });
-    houseGroup.wallMesh.material = new THREE.MeshLambertMaterial({ color: 0xf0f0f0, side: THREE.DoubleSide });
-    houseGroup.roofMesh.material = new THREE.MeshLambertMaterial({ color: 0xff6600, side: THREE.DoubleSide });
-    houseGroup.doorMesh.material = new THREE.MeshLambertMaterial({ color: 0x3399ff, side: THREE.DoubleSide });
-    houseGroup.sideWindowMesh.material = new THREE.MeshLambertMaterial({ color: 0x3399ff, side: THREE.DoubleSide });
-    // ovni
-
+    moonMesh.material = materials.moon.lambert;
+    for (const key in treeGroup) {
+        if (key.includes('Trunk')) 
+            treeGroup[key].material = materials.trunk.lambert;
+        else if (key.includes('Leaves')) 
+            treeGroup[key].material = materials.leaves.lambert;
+    }  
+    for (const child of houseGroup.children) {
+        if (child.name.includes('wall')) 
+            child.material = materials.house.wall.lambert;
+        else if (child.name.includes('roof')) 
+            child.material = materials.house.roof.lambert;
+        else if (child.name.includes('door') || child.name.includes('window')) 
+            child.material = materials.house.doorWindow.lambert;  
+    }
+    for (const child of ovni.children) {
+        if (child instanceof THREE.Mesh) {
+            if (child.geometry instanceof THREE.SphereGeometry) {
+                if (child.scale.y === 0.3) 
+                    child.material = materials.ovni.body.lambert;
+                else if (child.geometry.parameters.phiLength < Math.PI) 
+                    child.material = materials.ovni.cockpit.lambert;
+                else 
+                    child.material = materials.ovni.lights.lambert;
+            } else if (child.geometry instanceof THREE.CylinderGeometry) {
+                child.material = materials.ovni.body.lambert; 
+            }
+        }
+    }
+}
     
+
+function switchToPhongShading() {
+    if (shadowing == 'Phong') 
+        return;
+    shadowing = 'Phong';
+    moonMesh.material = materials.moon.phong;
+    for (const key in treeGroup) {
+        if (key.includes('Trunk')) 
+            treeGroup[key].material = materials.trunk.phong;
+        else if (key.includes('Leaves')) 
+            treeGroup[key].material = materials.leaves.phong;
+    } 
+    for (const child of houseGroup.children) {
+        if (child.name.includes('wall')) 
+            child.material = materials.house.wall.phong;
+        else if (child.name.includes('roof')) 
+            child.material = materials.house.roof.phong;
+        else if (child.name.includes('door') || child.name.includes('window')) 
+            child.material = materials.house.doorWindow.phong;  
+    }
+        for (const child of ovni.children) {
+        if (child instanceof THREE.Mesh) {
+            if (child.geometry instanceof THREE.SphereGeometry) {
+                if (child.scale.y === 0.3) 
+                    child.material = materials.ovni.body.phong;
+                else if (child.geometry.parameters.phiLength < Math.PI) 
+                    child.material = materials.ovni.cockpit.phong;
+                else 
+                    child.material = materials.ovni.lights.phong;
+            } else if (child.geometry instanceof THREE.CylinderGeometry) {
+                child.material = materials.ovni.body.phong; 
+            }
+        }
+    }
+}
+
+function switchToCartoonShading() {
+    if (shadowing == 'Cartoon') 
+        return;
+    shadowing = 'Cartoon';
+    moonMesh.material = materials.moon.toon;
+    for (const key in treeGroup) {
+        if (key.includes('Trunk')) 
+            treeGroup[key].material = materials.trunk.toon;
+        else if (key.includes('Leaves')) 
+            treeGroup[key].material = materials.leaves.toon;
+    } 
+    for (const child of houseGroup.children) {
+        if (child.name.includes('wall')) 
+            child.material = materials.house.wall.toon;
+        else if (child.name.includes('roof')) 
+            child.material = materials.house.roof.toon;
+        else if (child.name.includes('door') || child.name.includes('window')) 
+            child.material = materials.house.doorWindow.toon;  
+    }
+    for (const child of ovni.children) {
+        if (child instanceof THREE.Mesh) {
+            if (child.geometry instanceof THREE.SphereGeometry) {
+                if (child.scale.y === 0.3) 
+                    child.material = materials.ovni.body.toon;
+                else if (child.geometry.parameters.phiLength < Math.PI) 
+                    child.material = materials.ovni.cockpit.toon;
+                else 
+                    child.material = materials.ovni.lights.toon;
+            } else if (child.geometry instanceof THREE.CylinderGeometry) {
+                child.material = materials.ovni.body.toon; 
+            }
+        }
+    }
 }
 
 function ovni_movement(delta) {
     if(ovnimov){
-        ovni.position.x += (moveovniL + moveovniR) * delta * ovnispeed;
+        ovni.position.x += (moveovniL + moveovniR) * delta * 10;
     }
-    ovni.rotation.y += ovnispeed * delta;
+    ovni.rotation.y += 5 * delta;
 
     spotTarget.position.set(ovni.position.x, ovni.position.y - 3, ovni.position.z);
 }
@@ -344,6 +502,7 @@ function init() {
     renderer.setSize(window.innerWidth, window.innerHeight);
     document.body.appendChild(renderer.domElement);
 
+    createMaterials();
     createScene();
     createCameras();
 
@@ -419,10 +578,10 @@ function onKeyDown(e) {
         switchToGouraudShading();
     }
     else if (e.key == 'W' || e.key == 'w') {
-        
+        switchToPhongShading();
     }
     else if (e.key == 'E' || e.key == 'e') {
-        
+        switchToCartoonShading()
     }
 }
 
@@ -503,13 +662,10 @@ function applyCanvasTexture(canvas, target) {
         mesh = skydome.children[0];
     }
 
-    // Dispose old texture if it exists
     if (mesh.material.map) mesh.material.map.dispose();
 
     mesh.material.map = texture;
     mesh.material.needsUpdate = true;
-
-    // render();
 }
 
 init();
