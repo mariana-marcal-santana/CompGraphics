@@ -118,7 +118,7 @@ function createCameras() {
         1,
         2000
     );
-    camera.position.set(0, 25, 80);  
+    camera.position.set(0, 40, 80);  
     camera.lookAt(0, 0, 0);    
 }
 
@@ -129,14 +129,16 @@ function toggleDirectionalLight() {
     'use strict';
     if (isDirectionalLightOn) {
         scene.remove(directionalLight);
-        moonMesh.material.emissive.setHex(0x000000);
+        if(moonMesh.material != materials.moon.basic)
+            moonMesh.material.emissive.setHex(0x000000);
     } 
     else {
         directionalLight = new THREE.DirectionalLight(0xffffff, 4);
         directionalLight.position.copy(moonMesh.position);
         directionalLight.castShadow = true;
         scene.add(directionalLight);
-        moonMesh.material.emissive.setHex(0xffffff);
+        if(moonMesh.material != materials.moon.basic)
+            moonMesh.material.emissive.setHex(0xffffff);
     }
     isDirectionalLightOn = !isDirectionalLightOn;
 }
@@ -182,10 +184,10 @@ function createMoon() {
 function createTrees() {
     'use strict';
 
-    createTree(10, 5, 25, 15, 5);
-    createTree(7.5, 10, 10, 15, 10);
-    createTree(12.5, 5, 0, 12.5, 30);
-    createTree(10, 5, 25, 20, -20);
+    createTree(10, 3, 25, 15, 5);
+    createTree(7.5, 12, 20, 25, 10);
+    createTree(10, 7.5, -20, 22.5, 50);
+    createTree(8, 4.5, 30, 25, -25);
 }
 
 function createTree(height, rotation, x, y, z) {
@@ -358,7 +360,7 @@ function createOvni(){
 
     ovni.add(spotLight);
     
-    ovni.position.set(0, 35, 20);
+    ovni.position.set(0, 40, 20);
     ovni.scale.set(1.5, 1.5, 1.5);
     scene.add(ovni);
  
