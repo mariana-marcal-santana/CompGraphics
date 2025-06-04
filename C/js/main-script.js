@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { VRButton } from 'https://cdn.jsdelivr.net/npm/three@0.176.0/examples/jsm/webxr/VRButton.js';
 
 //////////////////////
 /* GLOBAL VARIABLES */
@@ -97,6 +98,7 @@ function createScene() {
     'use strict';
 
     scene = new THREE.Scene();
+    scene.position.set(0, -25, 0);
     scene.background = new THREE.Color('#ffffff'); 
 
     createSkydome();
@@ -185,9 +187,9 @@ function createTrees() {
     'use strict';
 
     createTree(10, 3, 25, 15, 5);
-    createTree(7.5, 12, 20, 25, 10);
+    createTree(7.5, 12, 20, 20, 10);
     createTree(10, 7.5, -20, 22.5, 50);
-    createTree(8, 4.5, 30, 25, -25);
+    createTree(8, 4.5, 30, 20, -25);
 }
 
 function createTree(height, rotation, x, y, z) {
@@ -502,7 +504,9 @@ function init() {
 
     renderer = new THREE.WebGLRenderer({antialias: true});
     renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.xr.enabled = true;
     document.body.appendChild(renderer.domElement);
+    document.body.appendChild( VRButton.createButton( renderer ) );
 
     createMaterials();
     createScene();
@@ -539,12 +543,12 @@ function animate() {
 function onResize() { 
     'use strict';
 
-    // renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setSize(window.innerWidth, window.innerHeight);
 
-    // if (window.innerHeight > 0 && window.innerWidth > 0) {
-    //     camera.aspect = window.innerWidth / window.innerHeight;
-    //     camera.updateProjectionMatrix();
-    // }
+    if (window.innerHeight > 0 && window.innerWidth > 0) {
+        camera.aspect = window.innerWidth / window.innerHeight;
+        camera.updateProjectionMatrix();
+    }
 }
 
 ///////////////////////
