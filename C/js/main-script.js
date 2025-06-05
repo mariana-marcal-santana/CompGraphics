@@ -11,7 +11,7 @@ let trees = [];
 let pointLights = [], spotLight, spotTarget;
 let calcLightsOn = true;
 let keys = [];
-let moveovniR = 0, moveovniL = 0, numLights = 6;
+let moveovniR = 0, moveovniL = 0, numLights = 6, moveovniF = 0, moveovniB = 0;
 let directionalLight;
 let isDirectionalLightOn = false, isSpotLightOn = true, isPointLightsOn = true;
 let lightsCounter = 2; // Ovni lights on in inicialization
@@ -584,6 +584,7 @@ function update() {
 
 function ovni_movement() {
     ovni.position.x += (moveovniL + moveovniR) * 0.4;
+    ovni.position.z += (moveovniF + moveovniB) * 0.4;
     
     ovni.rotation.y += 0.1;
 
@@ -681,6 +682,12 @@ function onKeyDown(e) {
     else if (e.key == 'ArrowRight' || e.key === 'arrowRight') {
         moveovniR = 1;
     }
+    else if (e.key == 'ArrowUp' || e.key === 'arrowUp') {
+        moveovniF = 1;
+    }
+    else if (e.key == 'ArrowDown' || e.key === 'arrowDown') {
+        moveovniB = -1;
+    }
     else if ((e.key == 'Q' || e.key == 'q') && shadowing != 'Gouraud') {
         shadowing = 'Gouraud'
         if(calcLightsOn)
@@ -714,6 +721,12 @@ function onKeyUp(e) {
     }
     else if (e.key == 'ArrowRight' || e.key === 'arrowRight') {
         moveovniR = 0;
+    }
+    else if (e.key == 'ArrowUp' || e.key === 'arrowUp') {
+        moveovniF = 0;
+    }
+    else if (e.key == 'ArrowDown' || e.key === 'arrowDown') {
+        moveovniB = 0;
     }
 }
 
